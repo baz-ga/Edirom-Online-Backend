@@ -102,7 +102,8 @@ let $params := (
     <param name="documentationLanguage" value="{eutil:getLanguage($edition)}"/>,
     <param name="footnoteBackLink" value="true"/>,
     <param name="graphicsPrefix" value="{$imagePrefix}"/>, (:TODO from XSLT <param name="graphicsPrefix"/>:)
-    <param name="numberHeadings" value="false"/>,
+    <param name="numberHeadings" value="true"/>,
+    <param name="prenumberedHeadings" value="true"/>,
     <param name="pageLayout" value="CSS"/>
 )
 
