@@ -102,7 +102,9 @@ let $params := (
     <param name="base" value="{concat($base, '/../xslt/')}"/>,
     <param name="documentationLanguage" value="{edition:getLanguage($edition)}"/>,
     <param name="footnoteBackLink" value="true"/>,
-    <param name="numberHeadings" value="false"/>,
+    <param name="graphicsPrefix" value="{$imagePrefix}"/>, (:TODO from XSLT <param name="graphicsPrefix"/>:)
+    <param name="numberHeadings" value="true"/>,
+    <param name="prenumberedHeadings" value="true"/>,
     <param name="pageLayout" value="CSS"/>
 )
 
