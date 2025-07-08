@@ -91,6 +91,7 @@ let $xslDoc.pass1 :=
         eutil:getDoc($eutil:xsltBase || '/tei/profiles/edirom-body/teiBody2HTML.xsl')
 
 (:TODO introduce injection-point for tei-stylesheet parameters :)
+(:TODO graphicsPrefix should come from the XSLT rather than being passed here :)
 let $params.pass1 :=
     <parameters>
         (: parameters for Edirom-Online :)
@@ -105,7 +106,9 @@ let $params.pass1 :=
         <param name="base" value="{concat($eutil:xsltBase, '/')}"/>,
         <param name="documentationLanguage" value="{edition:getLanguage($edition)}"/>,
         <param name="footnoteBackLink" value="true"/>,
-        <param name="numberHeadings" value="false"/>,
+        <param name="graphicsPrefix" value="{$imagePrefix}"/>,
+        <param name="numberHeadings" value="true"/>,
+        <param name="prenumberedHeadings" value="true"/>,
         <param name="pageLayout" value="CSS"/>
     </parameters>
 
