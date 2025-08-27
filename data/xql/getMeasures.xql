@@ -101,10 +101,14 @@ declare function local:getMeasures($mdiv as element(mei:mdiv)?, $mdivID as xs:st
             if($hasParts)
             then local:get-part-measures($measure)
             else local:get-score-measures($measure)
+        let $id :=
+            if($hasParts)
+            then 'measure_' || $mdivID || '_' || $measureN
+            else $measure/@xml:id => xs:string()
         order by eutil:compute-measure-sort-key($measureN)
         return
             map {
-                "id": 'measure_' || $mdivID || '_' || $measureN,
+                "id": $id,
                 "measures": array { $measures },
                 "mdivs": $mdivID,
                 "name": $measureN
