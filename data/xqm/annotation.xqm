@@ -28,13 +28,11 @@ declare namespace transform="http://exist-db.org/xquery/transform";
 
 (: FUNCTION DECLARATIONS =================================================== :)
 
-<<<<<<< HEAD
-=======
 declare function annotation:getLocalizedLabel($node) {
 
     let $lang := request:get-parameter('lang', '')
     let $nodeName := local-name($node)
-  
+
      let $label :=
         switch($nodeName)
             case 'category' return
@@ -48,11 +46,10 @@ declare function annotation:getLocalizedLabel($node) {
                 eutil:getLocalizedName($node, $lang)
             default return
                 $nodeName
-  
+
     return $label
 };
 
->>>>>>> 7e006fca (annotation.xqm: use new function  taxonomy:get-labels in getLocalizedLabel)
 (:~
  : Returns a JSON representation of all Annotations of a document
  :
@@ -222,13 +219,32 @@ declare function annotation:getPriorityLabel($anno) as xs:string* {
 };
 
 (:~
+<<<<<<< HEAD
+=======
+: Returns Annotation's categories
+:
+: @param $anno The Annotation to process
+: @return The categories (as comma separated string)
+:)
+declare function annotation:getCategories($anno as element()) as xs:string {
+
+    string-join(annotation:get-category-labels-as-sequence($anno), ', ')
+};
+
+(:~
+>>>>>>> d3feb43b (annotation.xqm: rename function)
  : Returns an array of Annotation's categories
  :
  : @param $anno The Annotation to process
  : @return The categories (as comma separated string)
  :)
+<<<<<<< HEAD
 declare function annotation:getCategoriesAsArray($anno as element()) as xs:string* {
 
+=======
+declare function annotation:get-category-labels-as-sequence($anno as element()) as xs:string* {
+
+>>>>>>> d3feb43b (annotation.xqm: rename function)
     let $doc := $anno/root()
 
     let $classes := tokenize(replace(normalize-space($anno/@class),'#',''),' ')
