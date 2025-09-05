@@ -111,8 +111,8 @@ declare function annotation:toJSON($anno as element(), $edition as xs:string) as
  :)
 declare function annotation:getContent($anno as element(), $idPrefix as xs:string, $edition as xs:string?) {
 
-    (:let $xsltBase := concat('file:', system:get-module-load-path(), '/../xslt/'):)
-    let $xsltBase := concat(replace(system:get-module-load-path(), 'embedded-eXist-server', ''), '/../xslt/') (: TODO: Prüfen, wie wir an dem replace vorbei kommen:)
+    (: TODO: check, whether replace is still necessary, by deploying in eXist-db app with embedded jetty :)
+    let $xsltBase := concat(replace(system:get-module-load-path(), 'embedded-eXist-server', ''), '/../xslt/')
 
     let $edition := request:get-parameter('edition', '')
     let $imageserver :=  edition:getPreference('image_server', $edition)
