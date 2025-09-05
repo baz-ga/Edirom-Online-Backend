@@ -50,7 +50,7 @@ let $priorityLabel := switch ($priority)
     default return
         eutil:getLanguageString('view.window.AnnotationView_Priority', ())
 
-let $categories := annotation:getCategoriesAsArray($annot)
+let $categories := annotation:get-category-labels-as-sequence($annot)
 let $categoriesLabel := switch (count($categories))
     case 0
         return
