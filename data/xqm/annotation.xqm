@@ -17,6 +17,8 @@ module namespace annotation = "http://www.edirom.de/xquery/annotation";
 import module namespace edition="http://www.edirom.de/xquery/edition" at "edition.xqm";
 import module namespace eutil="http://www.edirom.de/xquery/eutil" at "eutil.xqm";
 
+import module namespace taxonomy="http://www.edirom.de/xquery/taxonomy" at "taxonomy.xqm";
+
 (: NAMESPACE DECLARATIONS ================================================== :)
 
 declare namespace mei="http://www.music-encoding.org/ns/mei";
@@ -26,6 +28,34 @@ declare namespace transform="http://exist-db.org/xquery/transform";
 
 (: FUNCTION DECLARATIONS =================================================== :)
 
+<<<<<<< HEAD
+=======
+declare function annotation:getLocalizedLabel($node) {
+
+    let $lang := request:get-parameter('lang', '')
+    let $nodeName := local-name($node)
+  
+    let $label :=
+        if($nodeName = 'category') then (
+            (: new style, i.e. //category/label :)
+            let $labels := taxonomy:get-labels( $node )
+            return
+                if ($labels( $lang )) then
+                    $labels( $lang )
+                else
+                    $labels( 'und' )
+        
+        ) else if($nodeName = 'term') then(
+            (: old style, i.e. //term/name :)
+            eutil:getLocalizedName($node, $lang)
+        
+        ) else
+            ($nodeName)
+  
+    return $label
+};
+
+>>>>>>> 7e006fca (annotation.xqm: use new function  taxonomy:get-labels in getLocalizedLabel)
 (:~
  : Returns a JSON representation of all Annotations of a document
  :
