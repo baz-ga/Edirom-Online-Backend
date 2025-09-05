@@ -40,17 +40,17 @@ declare variable $edition := request:get-parameter('edition', '');
  : @return a sequence of strings
  :)
 declare function local:getDistinctCategories($annots as element()*) as xs:string* {
-    
+
     (: older Edirom Online models (pre MEI 4) :)
     let $oldCats := distinct-values($annots/mei:ptr[@type = "categories"]/replace(@target, '#', ''))
-    
+
     (: MEI 4 and above Edirom Online model using @class and mei:taxonomy :)
     let $newCats :=
         distinct-values(
             for $annot in $annots
             return
                 tokenize(replace(normalize-space($annot/@class), '#', ''), ' '))[contains(., 'annotation.category')]
-    
+
     return
         distinct-values(($oldCats, $newCats)[string-length() gt 0])
 };
@@ -63,18 +63,18 @@ declare function local:getDistinctCategories($annots as element()*) as xs:string
  : @return a sequence of strings
  :)
 declare function local:getDistinctPriorities($annots as element()*) as xs:string* {
-    
+
     distinct-values(
         for $annot in $annots
-        
+
         (: older Edirom Online models (pre MEI 4) :)
         let $oldLink := $annot/mei:ptr[@type = "priority"]/replace(@target, '#', '')
-        
+
         (: MEI 4 and above Edirom Online model using @class and mei:taxonomy :)
         let $classes := tokenize(replace(normalize-space($annot/@class), '#', ''), ' ')
-        
+
         let $newLink := $classes[starts-with(., 'ediromAnnotPrio')]
-        
+
         return
             distinct-values(($oldLink, $newLink))[string-length(.) gt 0]
     )
@@ -90,7 +90,7 @@ let $annots := $editionCollection//mei:annot[matches(@plist, $uri)] | $mei//mei:
 let $categories :=
     for $category in local:getDistinctCategories($annots)
     let $categoryElement := ($editionCollection/id($category)[mei:label or mei:name])[1]
-    let $name := eutil:getLocalizedName($categoryElement, edition:getLanguage($edition))
+    let $name := annotation:get-category-label-localized($categoryElement, eutil:getLanguage($edition))
     order by $name
     return
         map {

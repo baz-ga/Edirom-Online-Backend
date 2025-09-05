@@ -110,7 +110,7 @@ declare function annotation:toJSON($anno as element(), $edition as xs:string) as
     let $cats :=
         string-join(
             for $u in $catURIs
-            return eutil:getLocalizedName($doc/id($u), edition:getLanguage($edition))
+            return annotation:get-category-label-localized($doc/id($u), eutil:getLanguage($edition))
          , ', ')
 
     let $count := count($anno/preceding::mei:annot[@type = 'editorialComment']) + 1
@@ -253,7 +253,7 @@ declare function annotation:get-category-labels-as-sequence($anno as element()) 
 
     let $cats :=
         for $u in $catURIs
-        return annotation:category_getName($doc/id($u),'')
+        return annotation:get-category-label-localized($doc/id($u),'')
 
     return $cats
 };
