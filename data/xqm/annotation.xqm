@@ -48,15 +48,15 @@ declare function annotation:annotationsToJSON($uri as xs:string, $edition as xs:
  : @return The JSON representation
  :)
 declare function annotation:toJSON($anno as element(), $edition as xs:string) as map(*) {
-    
+
     let $id := $anno/string(@xml:id)
     let $lang := request:get-parameter('lang', '')
     let $title := eutil:getLocalizedName($anno, $lang)
-    
+
     let $doc := $anno/root()
     let $prio := annotation:getPriorityLabel($anno)
     let $pList.raw := distinct-values(tokenize(normalize-space($anno/@plist), ' '))
-    
+
     let $pList :=
         for $p in $pList.raw
         return
@@ -64,7 +64,7 @@ declare function annotation:toJSON($anno as element(), $edition as xs:string) as
                 (substring-before($p, '#'))
             else
                 $p
-    
+
     let $sigla :=
         for $p in distinct-values($pList)
         let $pDoc.valid :=
@@ -85,18 +85,18 @@ declare function annotation:toJSON($anno as element(), $edition as xs:string) as
                 ($pDoc//mei:manifestationList/mei:manifestation/mei:identifier[@type = 'siglum']/text())
             else
                 ($pDoc//mei:title[@type = 'siglum']/text())
-    
+
     let $classes := tokenize(replace(normalize-space($anno/@class),'#',''),' ')
     let $catURIs := distinct-values((tokenize(replace($anno/mei:ptr[@type = 'categories']/@target,'#',''),' '), $classes[contains(.,'annotation.category.')]))
-    
+
     let $cats :=
         string-join(
             for $u in $catURIs
             return eutil:getLocalizedName($doc/id($u), edition:getLanguage($edition))
          , ', ')
-     
+
     let $count := count($anno/preceding::mei:annot[@type = 'editorialComment']) + 1
-    
+
     return
         map {
             'id': $id,
@@ -120,11 +120,11 @@ declare function annotation:getContent($anno as element(), $idPrefix as xs:strin
     let $edition := request:get-parameter('edition', '')
     let $imageserver :=  edition:getPreference('image_server', $edition)
     let $imageBasePath := edition:getPreference('image_prefix', $edition)
-    
+
     let $language := edition:getLanguage($edition)
-    
+
     let $p := $anno/mei:p[not(@xml:lang) or @xml:lang = $language]
-    
+
     let $html :=
         transform:transform($p,eutil:getDoc($eutil:xsltBase || '/meiP2html.xsl'),
             <parameters>
@@ -132,7 +132,7 @@ declare function annotation:getContent($anno as element(), $idPrefix as xs:strin
                 <param name="imagePrefix" value="{$imageBasePath}"/>
             </parameters>
         )
-    
+
     return
         $html
 };
@@ -144,7 +144,7 @@ declare function annotation:getContent($anno as element(), $idPrefix as xs:strin
  : @return The priority
  :)
 declare function annotation:getPriority($anno as element()) as xs:string* {
-    
+
     let $uri := $anno/mei:ptr[@type eq 'priority']/string(@target)
     let $lang := request:get-parameter('lang', '')
 
@@ -155,9 +155,9 @@ declare function annotation:getPriority($anno as element()) as xs:string* {
             eutil:getDoc(substring-before($uri,'#'))
     
     let $locId := substring-after($uri,'#')
-    
+
     let $elem := $doc/id($locId)
-    
+
     return
         if(local-name($elem) eq 'term') then
             eutil:getLocalizedName($elem, $lang)
@@ -166,21 +166,21 @@ declare function annotation:getPriority($anno as element()) as xs:string* {
 };
 
 declare function annotation:getPriorityLabel($anno) as xs:string* {
-    
+
     let $isPrioElemAlready := local-name($anno) = ('term','category')
     let $oldEdiromStyle := local-name($anno) = 'annot' and exists($anno/mei:ptr[@type eq 'priority'])
-    
+
     return
         if($isPrioElemAlready) then
             (eutil:getLocalizedName($anno))
-        
+
         else if($oldEdiromStyle) then
             (annotation:getPriority($anno))
-        
+
         else (
             let $classes := tokenize(normalize-space($anno/@class),' ')
             let $classBasedUri := $classes[starts-with(.,'#ediromAnnotPrio')]
-            
+
             let $labels :=
                 for $uri in $classBasedUri
                 let $doc :=
@@ -192,7 +192,7 @@ declare function annotation:getPriorityLabel($anno) as xs:string* {
                 let $prioElem := $doc/id(replace($uri,'#',''))
                 let $label := eutil:getLocalizedName($prioElem)
                 return $label
-            
+
             return string-join($labels,', ')
         )
 };
@@ -204,30 +204,16 @@ declare function annotation:getPriorityLabel($anno) as xs:string* {
  : @return The categories (as comma separated string)
  :)
 declare function annotation:getCategoriesAsArray($anno as element()) as xs:string* {
-    
+
     let $doc := $anno/root()
-    
+
     let $classes := tokenize(replace(normalize-space($anno/@class),'#',''),' ')
     let $catURIs := distinct-values((tokenize(replace($anno/mei:ptr[@type = 'categories']/@target,'#',''),' '), $classes[contains(.,'annotation.category.')]))
-    
+
     let $cats :=
         for $u in $catURIs
-        return eutil:getLocalizedName($doc/id($u), '')
-                 
-    
-    (:let $uris := tokenize($anno/mei:ptr[@type eq 'categories']/string(@target),' ')
-    
-    let $string := for $uri in $uris
-                   let $doc := if(starts-with($uri,'#'))
-                               then($anno/root())
-                               else(eutil:getDoc(substring-before($uri,'#')))
-                   let $locID := substring-after($uri,'#')
-                   let $elem := $doc/id($locID)
-                   return
-                       if(local-name($elem) eq 'term')
-                       then(eutil:getLocalizedName($elem))
-                       else($locID)
-    :)
+        return annotation:category_getName($doc/id($u),'')
+
     return $cats
 };
 
@@ -238,9 +224,9 @@ declare function annotation:getCategoriesAsArray($anno as element()) as xs:strin
  : @return The list
  :)
 declare function annotation:getParticipants($anno as element()) as xs:string* {
-    
+
     let $ps := tokenize($anno/@plist, ' ')
     let $uris := distinct-values(for $uri in $ps return substring-before($uri,'#'))
-    
+
     return $uris
 };
