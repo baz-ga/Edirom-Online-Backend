@@ -50,9 +50,11 @@ let $uri :=
 
 let $doc := eutil:getDoc($uri)
 
+let $annotations := annotation:annotationsToJSON($uri, $EDITION)
+
 return
     map {
         'success': true(),
         'total': count($doc//mei:annot[@type = 'editorialComment']),
-        'annotations': array {annotation:annotationsToJSON($uri, $EDITION)}
+        'annotations': array {$annotations},
     }
