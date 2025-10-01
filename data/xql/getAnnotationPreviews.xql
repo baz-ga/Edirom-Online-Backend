@@ -14,7 +14,6 @@ xquery version "3.1";
 
 import module namespace source = "http://www.edirom.de/xquery/source" at "../xqm/source.xqm";
 import module namespace teitext = "http://www.edirom.de/xquery/teitext" at "../xqm/teitext.xqm";
-import module namespace edition = "http://www.edirom.de/xquery/edition" at "../xqm/edition.xqm";
 import module namespace eutil = "http://www.edirom.de/xquery/eutil" at "../xqm/eutil.xqm";
 
 (: NAMESPACE DECLARATIONS ================================================== :)
@@ -32,9 +31,9 @@ declare option output:media-type "application/json";
 
 declare variable $lang := request:get-parameter('lang', '');
 declare variable $edition := request:get-parameter('edition', '');
-declare variable $imageserver := edition:getPreference('image_server', $edition);
+declare variable $imageserver := eutil:getPreference('image_server', $edition);
 declare variable $uri := request:get-parameter('uri', '');
-declare variable $imageBasePath := edition:getPreference('image_prefix', $edition);
+declare variable $imageBasePath := eutil:getPreference('image_prefix', $edition);
 
 (: FUNCTION DECLARATIONS =================================================== :)
 
@@ -384,7 +383,7 @@ declare function local:getImageAreaParams($zone as element()?, $imgWidth as xs:d
 };
 
 declare function local:getItemLabel($elems as element()*) as xs:string {
-    let $language := edition:getLanguage($edition)
+    let $language := eutil:getLanguage($edition)
 
     return
         string-join((
