@@ -1317,4 +1317,37 @@
         </xsl:if>
     </xsl:template>
     <!-- /SAVED OLD TEI TEMPLATES TO MAKE THIS WORK -->
+    
+    <!-- ADDITIONAL TEMPLATES -->
+    
+    <xd:doc scope="component">
+        <xd:desc>Wrap tei:g contents in a HTML span element and makeRendition.</xd:desc>
+    </xd:doc>
+    <xsl:template match="tei:g">
+        <xsl:element name="span">
+            <xsl:call-template name="makeRendition" />
+            <xsl:apply-templates />
+        </xsl:element>
+    </xsl:template>
+    
+    <!-- /ADDITIONAL TEMPLATES -->
+    
+    <!-- TEI Stylesheets 7.58.0 OVERRIDES -->
+    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="headings" type="string">
+        <desc>Override template from common_param.xsl</desc>
+        <desc>Punctuation to insert after a section number</desc>
+    </doc>
+    <xsl:template name="headingNumberSuffix">
+        <xsl:choose>
+            <xsl:when test="$prenumberedHeadings='true'">
+                <xsl:value-of select="$numberSpacer"/>
+            </xsl:when>
+            <xsl:otherwise>
+                <xsl:text>.</xsl:text>
+                <xsl:value-of select="$numberSpacer"/>
+            </xsl:otherwise>
+        </xsl:choose>
+    </xsl:template>
+    <!-- /TEI Stylesheets 7.58.0 OVERRIDES -->
+
 </xsl:stylesheet>

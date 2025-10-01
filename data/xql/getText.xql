@@ -78,9 +78,9 @@ let $doc :=
 
 let $base := replace(system:get-module-load-path(), 'embedded-eXist-server', '')
 let $edition := request:get-parameter('edition', '')
-let $imageserver := eutil:getPreference('image_server', $edition)
+let $imageserver := edition:getPreference('image_server', $edition)
 
-let $imagePrefix := eutil:getPreference('image_prefix', $edition)
+let $imagePrefix := edition:getPreference('image_prefix', $edition)
 
 let $xsl :=
     if ($xslInstruction) then
@@ -91,17 +91,19 @@ let $xsl :=
 (:TODO introduce injection-point for tei-stylesheet parameters :)
 let $params := (
     (: parameters for Edirom-Online :)
-    <param name="lang" value="{eutil:getLanguage($edition)}"/>,
+    <param name="lang" value="{edition:getLanguage($edition)}"/>,
     <param name="docUri" value="{$uri}"/>,
     <param name="contextPath" value="{$contextPath}"/>,
     <param name="imagePrefix" value="{$imagePrefix}"/>,
     (: parameters for the TEI Stylesheets :)
+    <param name="autoEndNotes" value="true"/>,
     <param name="autoHead" value="false"/>,
     <param name="autoToc" value="false"/>,
     <param name="base" value="{concat($base, '/../xslt/')}"/>,
-    <param name="documentationLanguage" value="{eutil:getLanguage($edition)}"/>,
+    <param name="documentationLanguage" value="{edition:getLanguage($edition)}"/>,
     <param name="footnoteBackLink" value="true"/>,
-    <param name="numberHeadings" value="false"/>,
+    <param name="numberHeadings" value="true"/>,
+    <param name="prenumberedHeadings" value="true"/>,
     <param name="pageLayout" value="CSS"/>
 )
 
