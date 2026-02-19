@@ -19,7 +19,7 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          IMAGE_NAME="Edirom/Edirom-Online-Backend"
+          IMAGE_NAME="edirom/edirom-online-backend"
           TAG=${GITHUB_REF#refs/tags/}
           
           docker build -t $IMAGE_NAME:$TAG .
