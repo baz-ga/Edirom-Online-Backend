@@ -54,7 +54,7 @@ let $doc := eutil:getDoc($uri)
 
 let $annotations := annotation:annotationsToJSON($uri, $EDITION)
 
-let $annotationFields := map:keys($annotations[1])
+let $annotationFields := distinct-values(for $a in $annotations return map:keys($a))
 
 let $emptyFields :=
     for $fieldName in $annotationFields
