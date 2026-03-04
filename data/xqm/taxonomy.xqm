@@ -151,7 +151,7 @@ as map( * )
 declare function taxonomy:get-root-identifying-string( $element as element ( * ) )
 as xs:string
 { (:TODO should precendence be as is or class over xml:id? :)
-    ($element/ancestor-or-self::mei:taxonomy/@xml:id, substring-after($element/@class, '#'))[1] => xs:string()
+    ($element/ancestor-or-self::mei:taxonomy[last()]/@xml:id, substring-after($element/@class, '#'))[1] => xs:string()
 
 };
 
