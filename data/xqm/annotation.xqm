@@ -125,14 +125,14 @@ declare function annotation:toJSON($anno as element(), $edition as xs:string) as
     (: create a map with keys for each taxonomy used for this annotation and the corresponding class labels :)
     let $taxonomiesMap := map:merge(
         for $usedTaxonomy in $classes-elements[ancestor::mei:taxonomy]
-        let $taxonomyIdentifier := taxonomy:get-root-identifying-string( $usedTaxonomy )
+        let $taxonomyIdentifier := taxonomy:get-parent-taxonomy-identifying-string( $usedTaxonomy )
         return
             map:entry(
                 $taxonomyIdentifier,
                 string-join (
                     (
                         for $classElement in $classes-elements[self::mei:category]
-                        where taxonomy:get-root-identifying-string( $classElement ) = $taxonomyIdentifier
+                        where taxonomy:get-parent-taxonomy-identifying-string( $classElement ) = $taxonomyIdentifier
                         return taxonomy:get-label-localized-as-string($classElement)
                     ),
                     ', '
