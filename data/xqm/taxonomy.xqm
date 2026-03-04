@@ -155,6 +155,21 @@ as xs:string
 
 };
 
+(:~
+ : Gets the xml:id of the innermost ancestor mei:taxonomy containing the element,
+ : or falls back to the id referenced in @class if no ancestor taxonomy exists.
+ : Use this for grouping categories by their containing taxonomy in nested structures,
+ : as opposed to get-root-identifying-string which returns the outermost ancestor.
+ :
+ : @return xs:string of the retrieved identifier
+ :)
+declare function taxonomy:get-parent-taxonomy-identifying-string( $element as element( * ) )
+as xs:string
+{
+    ($element/ancestor-or-self::mei:taxonomy[1]/@xml:id, substring-after($element/@class, '#'))[1] => xs:string()
+
+};
+
 declare function taxonomy:get-label-localized-as-string( $element as element( mei:category ) )
 as xs:string
 {
