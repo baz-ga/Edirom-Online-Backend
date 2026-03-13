@@ -39,12 +39,10 @@ let $annot := $doc/id($internalId)
 
 let $participants := annotation:getParticipants($annot)
 
-let $classElements :=
-    for $classIDREF in annotation:get-class-idrefs-as-sequence($annot)
-    return $doc/id($classIDREF)
+let $categoryElements := annotation:get-referenced-category-elements($annot, $doc)
 
 let $taxonomyGroups :=
-    for $elem in $classElements[ancestor::mei:taxonomy]
+    for $elem in $categoryElements
     let $taxonomyId := taxonomy:get-parent-taxonomy-identifying-string($elem)
     group by $taxonomyId
     let $taxonomyElem := $elem[1]/ancestor-or-self::mei:taxonomy[1]

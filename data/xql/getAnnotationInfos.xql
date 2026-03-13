@@ -37,14 +37,10 @@ let $mei := eutil:getDoc($uri)
 let $editionCollection := edition:collection($edition)
 let $annots := $editionCollection//mei:annot[matches(@plist, $uri)] | $mei//mei:annot
 
-let $allClassElements :=
-    for $annot in $annots
-    let $doc := $annot/root()
-    for $classIDREF in annotation:get-class-idrefs-as-sequence($annot)
-    return $doc/id($classIDREF)
+let $categoryElements := annotation:get-referenced-category-elements($annots, ($mei, $editionCollection))
 
 let $taxonomiesArray := array {
-    for $elem in $allClassElements[ancestor::mei:taxonomy]
+    for $elem in $categoryElements
     let $taxonomyId := taxonomy:get-parent-taxonomy-identifying-string($elem)
     group by $taxonomyId
     let $taxonomyElem := $elem[1]/ancestor-or-self::mei:taxonomy[1]
