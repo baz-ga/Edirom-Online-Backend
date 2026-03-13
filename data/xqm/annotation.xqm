@@ -112,6 +112,8 @@ declare function annotation:toJSON($anno as element(), $edition as xs:string) as
             return annotation:get-category-label-localized($doc/id($u))
          , ', ')
 
+    let $categoryElements := annotation:get-referenced-category-elements($anno, edition:collection($edition))
+
     let $count := count($anno/preceding::mei:annot[@type = 'editorialComment']) + 1
 
     (: create a map with all static information about the annotation :)
@@ -124,14 +126,14 @@ declare function annotation:toJSON($anno as element(), $edition as xs:string) as
 
     (: create a map with keys for each taxonomy used for this annotation and the corresponding class labels :)
     let $taxonomiesMap := map:merge(
-        for $usedTaxonomy in $classes-elements[ancestor::mei:taxonomy]
+        for $usedTaxonomy in $categoryElements
         let $taxonomyIdentifier := taxonomy:get-parent-taxonomy-identifying-string( $usedTaxonomy )
         return
             map:entry(
                 $taxonomyIdentifier,
                 string-join (
                     (
-                        for $classElement in $classes-elements[self::mei:category]
+                        for $classElement in $categoryElements
                         where taxonomy:get-parent-taxonomy-identifying-string( $classElement ) = $taxonomyIdentifier
                         return taxonomy:get-label-localized-as-string($classElement)
                     ),
@@ -306,6 +308,33 @@ declare function annotation:get-class-idrefs-as-sequence($anno as element(mei:an
     for $token in $anno/@class => normalize-space() => replace('#','') => tokenize(' ')
     return xs:IDREF($token)
 
+};
+
+(:~
+ : Returns the mei:category elements referenced by @class on the given annotations,
+ : searching for taxonomy definitions within the given scope.
+ :
+ : Fragment IDs are extracted from all @class tokens that contain ‘#' (handles both
+ : plain fragment refs like ‘#someId' and relative URIs like ‘taxonomy.xml#someId').
+ : Tokens without ‘#' (bare external URIs) are silently ignored.
+ :
+ : @param $annots  One or more mei:annot elements to inspect
+ : @param $scope   Node(s) to search for mei:category definitions (typically edition:collection($edition))
+ : @return         Distinct mei:category elements, deduplicated by @xml:id (first occurrence wins)
+ :)
+declare function annotation:get-referenced-category-elements(
+    $annots as element(mei:annot)*,
+    $scope  as node()*
+) as element(mei:category)*
+{
+    let $ids := distinct-values(
+        for $annot in $annots
+        for $token in tokenize(normalize-space($annot/@class), ‘ ‘)[contains(., ‘#')]
+        return substring-after($token, ‘#')
+    )
+    let $raw := $scope//mei:category[@xml:id = $ids]
+    for $id in distinct-values($raw/@xml:id)
+    return ($raw[@xml:id = $id])[1]
 };
 
 (:~
