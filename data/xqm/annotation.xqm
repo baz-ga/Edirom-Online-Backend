@@ -381,8 +381,7 @@ declare function annotation:get-referenced-categories-as-taxonomy-array(
         let $taxonomyGroupingKey := taxonomy:get-parent-taxonomy-identifying-string($categoryElement)
         group by $taxonomyGroupingKey
         let $taxonomyElement := $categoryElement[1]/ancestor-or-self::mei:taxonomy[1]
-        let $taxonomyLabels := taxonomy:get-labels($taxonomyElement)
-        let $taxonomyDisplayLabel := ($taxonomyLabels($lang)[. != ''], $taxonomyLabels('und')[. != ''], $taxonomyGroupingKey)[1]
+        let $taxonomyDisplayLabel := (taxonomy:get-label-localized-as-string($taxonomyElement)[. != ''], $taxonomyGroupingKey)[1]
         return
             map {
                 'id': $taxonomyGroupingKey,
