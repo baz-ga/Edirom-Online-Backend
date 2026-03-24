@@ -187,7 +187,7 @@ as xs:string
 
 };
 
-declare function taxonomy:get-label-localized-as-string( $element as element( mei:category ) )
+declare function taxonomy:get-label-localized-as-string( $element as element( * ) )
 as xs:string
 {
     let $lang := eutil:getSetLanguage(())
