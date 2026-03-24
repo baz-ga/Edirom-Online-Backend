@@ -311,29 +311,40 @@ declare function annotation:get-class-idrefs-as-sequence($anno as element(mei:an
 };
 
 (:~
- : Returns the mei:category elements referenced by @class on the given annotations,
- : searching for taxonomy definitions within the given scope.
+ : Returns the mei:category elements referenced by @class on the given annotations.
  :
- : Fragment IDs are extracted from all @class tokens that contain '#' (handles both
- : plain fragment refs like '#someId' and relative URIs like 'taxonomy.xml#someId').
- : Tokens without '#' (bare external URIs) are silently ignored.
+ : Each URI token in @class is resolved to its target document before searching:
+ : - fragment-only refs (#someId) resolve to the annotation's own document
+ : - relative or absolute refs (taxonomy.xml#someId, http://…#someId) are resolved
+ :   against the annotation's base URI and opened with doc()
+ : Tokens without '#' (bare external URIs without a fragment) are silently ignored.
  :
  : @param $annots  One or more mei:annot elements to inspect
- : @param $scope   Node(s) to search for mei:category definitions (typically edition:collection($edition))
  : @return         Distinct mei:category elements, deduplicated by @xml:id (first occurrence wins)
  :)
 declare function annotation:get-referenced-category-elements(
-    $annots as element(mei:annot)*,
-    $scope  as node()*
+    $annots as element(mei:annot)*
 ) as element(mei:category)*
 {
-    let $ids := distinct-values(
+    let $raw :=
         for $annot in $annots
         for $token in tokenize(normalize-space($annot/@class), ' ')[contains(., '#')]
-        return substring-after($token, '#')
-    )
-    let $raw := $scope//mei:category[@xml:id = $ids]
+
+        let $base-part := substring-before($token, '#')
+
+        let $id        := substring-after($token, '#')
+
+        let $doc :=
+            if ($base-part = '')
+            then $annot/root()
+            else
+                let $resolved := resolve-uri($base-part, base-uri($annot))
+                return if (doc-available($resolved)) then doc($resolved) else ()
+
+        return $doc//mei:category[@xml:id = $id]
+
     for $id in distinct-values($raw/@xml:id)
+
     return ($raw[@xml:id = $id])[1]
 };
 
