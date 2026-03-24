@@ -175,17 +175,15 @@ as xs:string
  : Returns a string identifier for grouping a category with its siblings.
  :
  : Resolution order:
- : 1. @class fragment — use when it references the grouping parent category
- :    (e.g. edirom-style: class="#ediromPriority"; bazga-style: class="#bazga.annotation.class.editorial-intervention").
- : 2. The xml:id of the nearest ancestor mei:taxonomy as a fallback for
- :    categories that carry no @class.
+ : 1. @class fragment — the leaf category’s explicit declaration of its parent group
+ : 2. @xml:id of the nearest ancestor mei:taxonomy — fallback for elements without @class
  :
  : @return xs:string of the retrieved identifier
  :)
 declare function taxonomy:get-parent-taxonomy-identifying-string( $element as element( * ) )
 as xs:string
 {
-    (substring-after($element/@class, '#'), $element/ancestor-or-self::mei:taxonomy[last()]/@xml:id)[. != ''][1] => xs:string()
+    (substring-after($element/@class, '#'), $element/ancestor-or-self::mei:taxonomy[1]/@xml:id)[. != ''][1] => xs:string()
 
 };
 
