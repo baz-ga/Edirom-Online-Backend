@@ -112,8 +112,6 @@ declare function annotation:toJSON($anno as element(), $edition as xs:string) as
             return annotation:get-category-label-localized($doc/id($u))
          , ', ')
 
-    let $categoryElements := annotation:get-referenced-category-elements($anno, edition:collection($edition))
-
     let $count := count($anno/preceding::mei:annot[@type = 'editorialComment']) + 1
 
     (: create a map with all static information about the annotation :)
@@ -126,14 +124,14 @@ declare function annotation:toJSON($anno as element(), $edition as xs:string) as
 
     (: create a map with keys for each taxonomy used for this annotation and the corresponding class labels :)
     let $taxonomiesMap := map:merge(
-        for $usedTaxonomy in $categoryElements
+        for $usedTaxonomy in $classes-elements[ancestor::mei:taxonomy]
         let $taxonomyIdentifier := taxonomy:get-parent-taxonomy-identifying-string( $usedTaxonomy )
         return
             map:entry(
                 $taxonomyIdentifier,
                 string-join (
                     (
-                        for $classElement in $categoryElements
+                        for $classElement in $classes-elements[self::mei:category]
                         where taxonomy:get-parent-taxonomy-identifying-string( $classElement ) = $taxonomyIdentifier
                         return taxonomy:get-label-localized-as-string($classElement)
                     ),
