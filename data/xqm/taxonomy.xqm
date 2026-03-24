@@ -194,10 +194,7 @@ as xs:string
 
     let $labels := taxonomy:get-labels( $element )
     return
-        if ( $labels( $lang ) ) then
-            $labels( $lang )
-        else
-            $labels( 'und' )
+        ($labels($lang)[. != ''], $labels('und')[. != ''], xs:string($element/@xml:id))[1]
 
 };
 
