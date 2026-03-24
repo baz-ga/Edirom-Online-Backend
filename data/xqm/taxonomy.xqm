@@ -144,29 +144,48 @@ as map( * )
 };
 
 (:~
- : Gets either the xml:id of the ancestor mei:taxonomy or the id referenced in @class
+: Returns a string identifier for grouping a category with its siblings.
  :
- : @return xs:string of the retrieved identifer
+ : Resolution order:
+ : 1. @class fragment — but only when it references an actual element in the document
+ :    (e.g. edirom-style container categories <category xml:id="ediromPriority"/>).
+ :    A @class value that has no corresponding element (e.g. bazga.annotation.class)
+ :    is skipped so it does not collapse all sub-groups into one.
+ : 2. The xml:id of the top-level ancestor mei:category that is a direct child of
+ :    the nearest ancestor mei:taxonomy.  This splits flat single-taxonomy structures
+ :    (e.g. BAZ-GA) into per-top-level-category groups.
+ : 3. The xml:id of the nearest ancestor mei:taxonomy itself as a last fallback.
+ :
+ : @return xs:string of the retrieved identifier
  :)
 declare function taxonomy:get-root-identifying-string( $element as element ( * ) )
 as xs:string
-{ (:TODO should precendence be as is or class over xml:id? :)
-    ($element/ancestor-or-self::mei:taxonomy[last()]/@xml:id, substring-after($element/@class, '#'))[1] => xs:string()
-
+{
+    let $classId       := substring-after($element/@class, '#')
+    let $nearestTaxonomy := $element/ancestor-or-self::mei:taxonomy[1]
+    let $topCategory   := ($element/ancestor-or-self::mei:category[parent::mei:taxonomy is $nearestTaxonomy])[1]
+    return (
+        $classId[. != '' and exists($element/root()/id($classId))],
+        $topCategory/@xml:id,
+        $nearestTaxonomy/@xml:id
+    )[. != ''][1] => xs:string()
 };
 
 (:~
- : Gets the xml:id of the innermost ancestor mei:taxonomy containing the element,
- : or falls back to the id referenced in @class if no ancestor taxonomy exists.
- : Use this for grouping categories by their containing taxonomy in nested structures,
- : as opposed to get-root-identifying-string which returns the outermost ancestor.
+ : Returns a string identifier for grouping a category with its siblings.
+ :
+ : Resolution order:
+ : 1. @class fragment — use when it references the grouping parent category
+ :    (e.g. edirom-style: class="#ediromPriority"; bazga-style: class="#bazga.annotation.class.editorial-intervention").
+ : 2. The xml:id of the nearest ancestor mei:taxonomy as a fallback for
+ :    categories that carry no @class.
  :
  : @return xs:string of the retrieved identifier
  :)
 declare function taxonomy:get-parent-taxonomy-identifying-string( $element as element( * ) )
 as xs:string
 {
-    ($element/ancestor-or-self::mei:taxonomy[1]/@xml:id, substring-after($element/@class, '#'))[1] => xs:string()
+    (substring-after($element/@class, '#'), $element/ancestor-or-self::mei:taxonomy[last()]/@xml:id)[. != ''][1] => xs:string()
 
 };
 

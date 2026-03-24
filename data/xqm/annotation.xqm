@@ -316,9 +316,9 @@ declare function annotation:get-class-idrefs-as-sequence($anno as element(mei:an
  : Returns the mei:category elements referenced by @class on the given annotations,
  : searching for taxonomy definitions within the given scope.
  :
- : Fragment IDs are extracted from all @class tokens that contain ‘#' (handles both
- : plain fragment refs like ‘#someId' and relative URIs like ‘taxonomy.xml#someId').
- : Tokens without ‘#' (bare external URIs) are silently ignored.
+ : Fragment IDs are extracted from all @class tokens that contain '#' (handles both
+ : plain fragment refs like '#someId' and relative URIs like 'taxonomy.xml#someId').
+ : Tokens without '#' (bare external URIs) are silently ignored.
  :
  : @param $annots  One or more mei:annot elements to inspect
  : @param $scope   Node(s) to search for mei:category definitions (typically edition:collection($edition))
@@ -331,8 +331,8 @@ declare function annotation:get-referenced-category-elements(
 {
     let $ids := distinct-values(
         for $annot in $annots
-        for $token in tokenize(normalize-space($annot/@class), ‘ ‘)[contains(., ‘#')]
-        return substring-after($token, ‘#')
+        for $token in tokenize(normalize-space($annot/@class), ' ')[contains(., '#')]
+        return substring-after($token, '#')
     )
     let $raw := $scope//mei:category[@xml:id = $ids]
     for $id in distinct-values($raw/@xml:id)

@@ -69,5 +69,6 @@ return
         'total': count($doc//mei:annot[@type = 'editorialComment']),
         'annotations': array {$annotations},
         'fields': $annotationFields,
-        'emptyFields': $emptyFields
+        'emptyFields': $emptyFields,
+        'legacyFields': array { 'categories', 'priority' }
     }
