@@ -352,3 +352,45 @@ declare function annotation:getParticipants($anno as element()) as xs:string* {
 
     return $uris
 };
+
+(:~
+ : Returns a map referenced classes in a map structured by taxonomy
+ :
+ : @param $annots one or more mei:annot elements
+ : @return a map
+ :)
+declare function annotation:get-referenced-categories-as-taxonomy-array(
+    $annots as element(mei:annot)+,
+    $scope as node()+,
+    $lang as xs:string?
+) as array(*)
+{
+    let $lang := eutil:getSetLanguage($lang)
+
+    return array {
+        for $annot in $annots
+        for $annotElement in ($scope//mei:annot[@xml:id = $annot/@xml:id])[1]
+        for $categoryElement in annotation:get-referenced-category-elements($annotElement)
+        let $taxonomyGroupingKey := taxonomy:get-parent-taxonomy-identifying-string($categoryElement)
+        group by $taxonomyGroupingKey
+        let $taxonomyElement := $categoryElement[1]/ancestor-or-self::mei:taxonomy[1]
+        let $taxonomyLabels := taxonomy:get-labels($taxonomyElement)
+        let $taxonomyDisplayLabel := ($taxonomyLabels($lang)[. != ''], $taxonomyLabels('und')[. != ''], $taxonomyGroupingKey)[1]
+        return
+            map {
+                'id': $taxonomyGroupingKey,
+                'label': $taxonomyDisplayLabel,
+                'items': array {
+                    for $id in distinct-values($categoryElement/@xml:id)
+                    let $catElem := ($categoryElement[@xml:id = $id])[1]
+                    let $catLabel := taxonomy:get-label-localized-as-string($catElem)
+                    order by $catLabel
+                    return
+                        map {
+                            'id': xs:string($id),
+                            'name': $catLabel
+                        }
+                }
+            }
+    }
+};
