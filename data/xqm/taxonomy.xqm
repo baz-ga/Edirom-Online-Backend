@@ -195,17 +195,18 @@ as xs:string
  : 2. mei:label without @xml:lang (language-neutral)
  : 3. @xml:id of the element as last resort
  :
- : @param $element a mei:taxonomy or mei:category element
- : @return xs:string — never empty if the element has @xml:id
+ : @param $element a mei:taxonomy or mei:category element, or empty sequence
+ : @return xs:string? — empty if $element is absent or has no @xml:id and no labels
  :)
-declare function taxonomy:get-label-localized-as-string( $element as element( * ) )
-as xs:string
+declare function taxonomy:get-label-localized-as-string( $element as element( * )? )
+as xs:string?
 {
-    let $lang := eutil:getSetLanguage(())
-
-    let $labels := taxonomy:get-labels( $element )
-    return
-        ($labels($lang)[. != ''], $labels('und')[. != ''], xs:string($element/@xml:id))[1]
+    if (empty($element)) then ()
+    else
+        let $lang := eutil:getSetLanguage(())
+        let $labels := taxonomy:get-labels( $element )
+        return
+            ($labels($lang)[. != ''], $labels('und')[. != ''], xs:string($element/@xml:id)[. != ''])[1]
 
 };
 
