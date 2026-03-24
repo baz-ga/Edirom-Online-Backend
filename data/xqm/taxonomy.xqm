@@ -192,7 +192,8 @@ as xs:string
 declare function taxonomy:get-label-localized-as-string( $element as element( mei:category ) )
 as xs:string
 {
-    let $lang := request:get-parameter( 'lang', $eutil:lang )
+    let $lang := eutil:getSetLanguage(())
+
     let $labels := taxonomy:get-labels( $element )
     return
         if ( $labels( $lang ) ) then
