@@ -39,26 +39,7 @@ let $annot := $doc/id($internalId)
 
 let $participants := annotation:getParticipants($annot)
 
-let $categoryElements := annotation:get-referenced-category-elements($annot, $doc)
-
-let $taxonomyGroups :=
-    for $elem in $categoryElements
-    let $taxonomyId := taxonomy:get-parent-taxonomy-identifying-string($elem)
-    group by $taxonomyId
-    let $taxonomyElem := $elem[1]/ancestor-or-self::mei:taxonomy[1]
-    let $taxonomyLabels := taxonomy:get-labels($taxonomyElem)
-    let $taxonomyLabel := ($taxonomyLabels($lang)[. != ''], $taxonomyLabels('und')[. != ''], $taxonomyId)[1]
-    let $displayLabel := if ($taxonomyLabel != $taxonomyId) then $taxonomyLabel else eutil:getLanguageString($taxonomyId, ())
-    return
-        map {
-            'id': $taxonomyId,
-            'label': $displayLabel,
-            'values': string-join(
-                for $e in $elem
-                return taxonomy:get-label-localized-as-string($e),
-                ', '
-            )
-        }
+let $taxonomiesArray := annotation:get-referenced-categories-as-taxonomy-array($annot, $doc, $lang)
 
 let $sigla := source:getSiglaAsArray($participants)
 let $siglaLabel := switch (count($sigla))
@@ -76,12 +57,12 @@ return
     <div class="annotView">
         <div class="metaBox">
             {
-                for $t in $taxonomyGroups
+                for $t in $taxonomiesArray?*
                 (: TODO process single vs. _multiple for keys :)
                 return
                     <div class="property taxonomy-{$t('id')}">
                         <div class="key">{$t('label')}</div>
-                        <div class="value">{$t('values')}</div>
+                        <div class="value">{string-join($t('items')?*?name, ', ')}</div>
                     </div>
             }
             <div class="property sourceSiglums">
