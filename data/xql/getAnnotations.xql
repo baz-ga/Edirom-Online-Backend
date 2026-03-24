@@ -63,6 +63,10 @@ let $emptyFields :=
     )
     return $fieldName
 
+(: legacy fields are only superseded when taxonomy-derived fields are actually present in the data :)
+let $baseFields := ('id', 'title', 'categories', 'priority', 'pos', 'sigla')
+let $hasTaxonomyFields := some $f in $annotationFields satisfies not($f = $baseFields)
+
 return
     map {
         'success': true(),
@@ -70,5 +74,5 @@ return
         'annotations': array {$annotations},
         'fields': $annotationFields,
         'emptyFields': $emptyFields,
-        'legacyFields': array { 'categories', 'priority' }
+        'legacyFields': array { if ($hasTaxonomyFields) then ('categories', 'priority') else () }
     }

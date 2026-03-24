@@ -8,12 +8,14 @@ xquery version "3.1";
     Returns the HTML for a specific annotation for an AnnotationView.
 
     @author <a href="mailto:kepper@edirom.de">Johannes Kepper</a>
+    @author <a href="mailto:bohl@edirom.de">Benjamin W. Bohl</a>
 :)
 
 (: IMPORTS ================================================================= :)
 
 import module namespace annotation = "http://www.edirom.de/xquery/annotation" at "../xqm/annotation.xqm";
 import module namespace doc = "http://www.edirom.de/xquery/document" at "../xqm/document.xqm";
+import module namespace edition = "http://www.edirom.de/xquery/edition" at "../xqm/edition.xqm";
 import module namespace eutil = "http://www.edirom.de/xquery/eutil" at "../xqm/eutil.xqm";
 import module namespace source = "http://www.edirom.de/xquery/source" at "../xqm/source.xqm";
 import module namespace taxonomy = "http://www.edirom.de/xquery/taxonomy" at "../xqm/taxonomy.xqm";
@@ -39,6 +41,27 @@ let $annot := $doc/id($internalId)
 
 let $participants := annotation:getParticipants($annot)
 
+(: TODO deprecate below categories and priorities fields with Edirom-Online-API 2.0.0 :)
+let $hideLegacyFields := xs:boolean(edition:getPreference('annotation_hide_legacy_fields', $edition))
+let $priority := annotation:getPriorityLabel($annot)
+let $priorityLabel := switch ($priority)
+     case ""
+         return
+             ()
+     default return
+         eutil:getLanguageString('ediromPriority', ()) || ' (legacy)'
+
+ let $categories := annotation:get-category-labels-as-sequence($annot)
+ let $categoriesLabel :=
+    switch (count($categories))
+        case 0 return ()
+        case 1 return
+             eutil:getLanguageString('ediromCategory', ()) || ' (legacy)'
+        default return
+         eutil:getLanguageString('ediromCategory_multiple', ()) || ' (legacy)'
+
+(: TODO deprecate above categories and priorities fields with Edirom-Online-API 2.0.0 :)
+
 let $taxonomiesArray := annotation:get-referenced-categories-as-taxonomy-array($annot, $doc, $lang)
 
 let $sigla := source:getSiglaAsArray($participants)
@@ -57,11 +80,27 @@ return
     <div class="annotView">
         <div class="metaBox">
             {
+                if($hideLegacyFields) then
+                    ()
+                else (
+                    (: TODO deprecate priority field with Edirom-Online-API 2.0.0 :)
+                    <div class="property priority">
+                        <div class="key">{$priorityLabel}</div>
+                        <div class="value">{$priority}</div>
+                    </div>,
+                    (: TODO deprecate categories field with Edirom-Online-API 2.0.0 :)
+                    <div class="property categories">
+                        <div class="key">{$categoriesLabel}</div>
+                        <div class="value">{string-join($categories, ', ')}</div>
+                    </div>
+                )
+            }
+            {
                 for $t in $taxonomiesArray?*
                 (: TODO process single vs. _multiple for keys :)
                 return
                     <div class="property taxonomy-{$t('id')}">
-                        <div class="key">{$t('label')}</div>
+                        <div class="key">{(eutil:getLanguageString(edition:getLanguageFileURI($edition, $lang), 'view.window.AnnotationView_' || $t('label'), (), $lang), 'view.window.AnnotationView_' || $t('label'))[1]}</div>
                         <div class="value">{string-join($t('items')?*?name, ', ')}</div>
                     </div>
             }
