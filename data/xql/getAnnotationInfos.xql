@@ -35,9 +35,9 @@ declare variable $lang := request:get-parameter('lang', '');
 
 let $mei := eutil:getDoc($uri)
 let $editionCollection := edition:collection($edition)
-let $annots := $editionCollection//mei:annot[matches(@plist, $uri)] | $mei//mei:annot
 
 let $categoryElements := annotation:get-referenced-category-elements($annots, ($mei, $editionCollection))
+let $annots := $editionCollection//mei:annot[@type = 'editorialComment'][matches(@plist, $uri)] | $mei//mei:annot[@type = 'editorialComment']
 
 let $taxonomiesArray := array {
     for $elem in $categoryElements
