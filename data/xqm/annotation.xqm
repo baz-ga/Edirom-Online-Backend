@@ -118,6 +118,10 @@ declare function annotation:toJSON($anno as element(), $edition as xs:string) as
     let $baseMap := map {
         'id': $id,
         'title': normalize-space($title),
+        (: TODO deprecate categories field with Edirom-Online-API 2.0.0 :)
+        'categories': $cats,
+        (: TODO deprecate priority field with Edirom-Online-API 2.0.0 :)
+        'priority': $prio,
         'pos': string($count),
         'sigla': string-join($sigla,', ')
     }
