@@ -187,6 +187,17 @@ as xs:string
 
 };
 
+(:~
+ : Returns a localized label string for a mei:taxonomy or mei:category element.
+ :
+ : Resolution order:
+ : 1. mei:label matching the current language
+ : 2. mei:label without @xml:lang (language-neutral)
+ : 3. @xml:id of the element as last resort
+ :
+ : @param $element a mei:taxonomy or mei:category element
+ : @return xs:string — never empty if the element has @xml:id
+ :)
 declare function taxonomy:get-label-localized-as-string( $element as element( * ) )
 as xs:string
 {
