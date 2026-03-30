@@ -1,0 +1,23 @@
+From 0a1eade190cdc1eac8924ba34a52a4f0d14526d6 Mon Sep 17 00:00:00 2001
+From: bwbohl <b.w.bohl@gmail.com>
+Date: Tue, 8 Jul 2025 08:55:05 +0200
+Subject: [PATCH] TEI: numberHeadings and prenumberedHeadings true
+
+---
+ data/xql/getText.xql | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/data/xql/getText.xql b/data/xql/getText.xql
+index 97cc0264..754c23f9 100644
+--- a/data/xql/getText.xql
++++ b/data/xql/getText.xql
+@@ -101,7 +101,8 @@ let $params := (
+     <param name="documentationLanguage" value="{eutil:getLanguage($edition)}"/>,
+     <param name="footnoteBackLink" value="true"/>,
+     <param name="graphicsPrefix" value="{$imagePrefix}"/>, (:TODO from XSLT <param name="graphicsPrefix"/>:)
+-    <param name="numberHeadings" value="false"/>,
++    <param name="numberHeadings" value="true"/>,
++    <param name="prenumberedHeadings" value="true"/>,
+     <param name="pageLayout" value="CSS"/>
+ )
+ 

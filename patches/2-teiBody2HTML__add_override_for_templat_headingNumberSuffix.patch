@@ -1,0 +1,38 @@
+From 5baa9b60653bd630220da84afff7f88286caac57 Mon Sep 17 00:00:00 2001
+From: bwbohl <b.w.bohl@gmail.com>
+Date: Mon, 7 Jul 2025 23:59:55 +0200
+Subject: [PATCH] teiBody2HTML: add override for template headingNumberSuffix
+
+Do not append "." for $prenumberedHeadings='true'
+---
+ .../tei/profiles/edirom-body/teiBody2HTML.xsl | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/data/xslt/tei/profiles/edirom-body/teiBody2HTML.xsl b/data/xslt/tei/profiles/edirom-body/teiBody2HTML.xsl
+index 2cd3a64c..70722067 100644
+--- a/data/xslt/tei/profiles/edirom-body/teiBody2HTML.xsl
++++ b/data/xslt/tei/profiles/edirom-body/teiBody2HTML.xsl
+@@ -1317,4 +1317,23 @@
+         </xsl:if>
+     </xsl:template>
+     <!-- /SAVED OLD TEI TEMPLATES TO MAKE THIS WORK -->
++    
++    
++    <!-- TEI Stylesheets 7.58.0 OVERRIDES -->
++    <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="headings" type="string">
++        <desc>Override template from common_param.xsl</desc>
++        <desc>Punctuation to insert after a section number</desc>
++    </doc>
++    <xsl:template name="headingNumberSuffix">
++        <xsl:choose>
++            <xsl:when test="$prenumberedHeadings='true'">
++                <xsl:value-of select="$numberSpacer"/>
++            </xsl:when>
++            <xsl:otherwise>
++                <xsl:text>.</xsl:text>
++                <xsl:value-of select="$numberSpacer"/>
++            </xsl:otherwise>
++        </xsl:choose>
++    </xsl:template>
++    <!-- /TEI Stylesheets 7.58.0 OVERRIDES -->
+ </xsl:stylesheet>

@@ -1,0 +1,32 @@
+From 086a74b4376fbf640a02fee4c084ab96340f30eb Mon Sep 17 00:00:00 2001
+From: bwbohl <b.w.bohl@gmail.com>
+Date: Mon, 14 Jul 2025 14:02:31 +0200
+Subject: [PATCH] teiBody2HTML: add minimalistic template for tei:g
+
+---
+ .../xslt/tei/profiles/edirom-body/teiBody2HTML.xsl | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/data/xslt/tei/profiles/edirom-body/teiBody2HTML.xsl b/data/xslt/tei/profiles/edirom-body/teiBody2HTML.xsl
+index 2cd3a64c..a2c9f409 100644
+--- a/data/xslt/tei/profiles/edirom-body/teiBody2HTML.xsl
++++ b/data/xslt/tei/profiles/edirom-body/teiBody2HTML.xsl
+@@ -1317,4 +1317,18 @@
+         </xsl:if>
+     </xsl:template>
+     <!-- /SAVED OLD TEI TEMPLATES TO MAKE THIS WORK -->
++    
++    <!-- ADDITIONAL TEMPLATES -->
++    
++    <xd:doc scope="component">
++        <xd:desc>Wrap tei:g contents in a HTML span element and makeRendition.</xd:desc>
++    </xd:doc>
++    <xsl:template match="tei:g">
++        <xsl:element name="span">
++            <xsl:call-template name="makeRendition" />
++            <xsl:apply-templates />
++        </xsl:element>
++    </xsl:template>
++    
++    <!-- /ADDITIONAL TEMPLATES -->
+ </xsl:stylesheet>

@@ -1,0 +1,75 @@
+From fce9265a20c8ee730cb4e6c934506bd43c5476a6 Mon Sep 17 00:00:00 2001
+From: bwbohl <b.w.bohl@gmail.com>
+Date: Wed, 9 Jul 2025 01:48:41 +0200
+Subject: [PATCH 1/3] getText: add new xslParam $imagePrefix
+
+---
+ data/xql/getText.xql | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/data/xql/getText.xql b/data/xql/getText.xql
+index 97cc0264..7003527f 100644
+--- a/data/xql/getText.xql
++++ b/data/xql/getText.xql
+@@ -94,13 +94,13 @@ let $params := (
+     <param name="lang" value="{eutil:getLanguage($edition)}"/>,
+     <param name="docUri" value="{$uri}"/>,
+     <param name="contextPath" value="{$contextPath}"/>,
++    <param name="imagePrefix" value="{$imagePrefix}"/>,
+     (: parameters for the TEI Stypesheets :)
+     <param name="autoHead" value="false"/>,
+     <param name="autoToc" value="false"/>,
+     <param name="base" value="{concat($base, '/../xslt/')}"/>,
+     <param name="documentationLanguage" value="{eutil:getLanguage($edition)}"/>,
+     <param name="footnoteBackLink" value="true"/>,
+-    <param name="graphicsPrefix" value="{$imagePrefix}"/>, (:TODO from XSLT <param name="graphicsPrefix"/>:)
+     <param name="numberHeadings" value="false"/>,
+     <param name="pageLayout" value="CSS"/>
+ )
+
+From 727d2fc611e053a47b4aae8ddc46851e9774587a Mon Sep 17 00:00:00 2001
+From: bwbohl <b.w.bohl@gmail.com>
+Date: Wed, 9 Jul 2025 02:21:47 +0200
+Subject: [PATCH 2/3] getText: prepend scheme, server, and port to $contextPath
+ variable
+
+---
+ data/xql/getText.xql | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/data/xql/getText.xql b/data/xql/getText.xql
+index 7003527f..417e1970 100644
+--- a/data/xql/getText.xql
++++ b/data/xql/getText.xql
+@@ -37,7 +37,7 @@ let $term := request:get-parameter('term', '')
+ let $path := request:get-parameter('path', '')
+ let $page := request:get-parameter('page', '')
+ let $doc := eutil:getDoc($uri)/root()
+-let $contextPath := request:get-context-path()
++let $contextPath := request:get-scheme()|| "://" || request:get-server-name() || ":" || request:get-server-port() || request:get-context-path()
+ let $xslInstruction := $doc//processing-instruction(xml-stylesheet)
+ 
+ let $xslInstruction :=
+
+From 0c715fb201e11020f76daad719e54f8e3a8885dd Mon Sep 17 00:00:00 2001
+From: bwbohl <b.w.bohl@gmail.com>
+Date: Wed, 9 Jul 2025 02:23:14 +0200
+Subject: [PATCH 3/3] getText: fix typo in comment
+
+---
+ data/xql/getText.xql | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/data/xql/getText.xql b/data/xql/getText.xql
+index 417e1970..45a3dba3 100644
+--- a/data/xql/getText.xql
++++ b/data/xql/getText.xql
+@@ -95,7 +95,7 @@ let $params := (
+     <param name="docUri" value="{$uri}"/>,
+     <param name="contextPath" value="{$contextPath}"/>,
+     <param name="imagePrefix" value="{$imagePrefix}"/>,
+-    (: parameters for the TEI Stypesheets :)
++    (: parameters for the TEI Stylesheets :)
+     <param name="autoHead" value="false"/>,
+     <param name="autoToc" value="false"/>,
+     <param name="base" value="{concat($base, '/../xslt/')}"/>,

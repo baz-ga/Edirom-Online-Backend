@@ -1,0 +1,21 @@
+From 98a99e15a620a5e373dd4047866aaefe35b35d9a Mon Sep 17 00:00:00 2001
+From: bwbohl <b.w.bohl@gmail.com>
+Date: Mon, 9 Sep 2024 11:47:20 +0200
+Subject: [PATCH] TEI: set autoEndNotes to true
+
+---
+ data/xql/getText.xql | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/data/xql/getText.xql b/data/xql/getText.xql
+index 97cc0264..4f0d27a6 100644
+--- a/data/xql/getText.xql
++++ b/data/xql/getText.xql
+@@ -95,6 +95,7 @@ let $params := (
+     <param name="docUri" value="{$uri}"/>,
+     <param name="contextPath" value="{$contextPath}"/>,
+     (: parameters for the TEI Stypesheets :)
++    <param name="autoEndNotes" value="true"/>,
+     <param name="autoHead" value="false"/>,
+     <param name="autoToc" value="false"/>,
+     <param name="base" value="{concat($base, '/../xslt/')}"/>,
