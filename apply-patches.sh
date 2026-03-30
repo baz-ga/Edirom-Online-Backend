@@ -20,13 +20,18 @@ while IFS= read -r patch; do
         continue
     fi
     # Check if the patch is already applied (reverse applies cleanly)
-    if git apply --check --reverse "$patch" 2>/dev/null; then
+    if git apply --check --reverse --ignore-whitespace "$patch" 2>/dev/null; then
         echo "    Already applied, skipping."
         git am --skip
         continue
     fi
+    # Retry with 3-way merge (handles context drift using blob OIDs from the patch)
+    git am --abort 2>/dev/null || true
+    if git am --3way "$patch" 2>/dev/null; then
+        continue
+    fi
     # Real conflict — abort and surface the error
-    git am --abort
+    git am --abort 2>/dev/null || true
     echo "Error: patch failed to apply: $(basename "$patch")" >&2
     exit 1
 done < <(find "$PATCHES_DIR" -name "*.patch" | sort -V)
