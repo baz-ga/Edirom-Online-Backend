@@ -1,0 +1,165 @@
+{
+	"openapi": "3.0.1",
+	"info": {
+		"title": "Edirom Online API",
+		"description": "This is the description and documentation of the Edirom-Online backend API.",
+		"licence": {
+			"name": "MIT"
+		},
+		"version": "2.0.0-alpha"
+	},
+	"servers": [
+		{
+			"description": "Local backend with EditionExample and Klarinettenquintett",
+			"url": "http://localhost:8080/exist/apps/Edirom-Online-Backend"
+		}
+	],
+	"tags": [
+		{
+			"name": "entry",
+			"description": "Entry endpoint"
+		},
+		{
+			"name": "collection",
+			"description": "Collection endpoint"
+		},
+		{
+			"name": "navigation",
+			"description": "Navigation endpoint"
+		},
+		{
+			"name": "document",
+			"description": "Document endpoint"
+		}
+	],
+	"components": {
+		"securitySchemes": {
+			"basicAuth": {
+				"type": "http",
+				"scheme": "basic"
+			},
+			"cookieAuth": {
+				"type": "apiKey",
+				"name": "example.com.login",
+				"in": "cookie"
+			}
+		}
+	},
+	"paths": {
+		"/api": {
+			"get": {
+				"summary": "API entry endpoint",
+				"description": "This is the entry point for the API.",
+				"operationId": "api:entryPoint",
+				"tags": ["entry"],
+				"responses": {
+					"200": {
+						"description": "Succesful response",
+						"content": {
+							"application/ld+json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"message": {
+											"type": "string"
+										}
+									}
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "Not found"
+					},
+					"500": {
+						"description": "Internal server error"
+					}
+				}
+			}
+		},
+		"/api/document": {
+			"get": {
+				"summary": "Document endpoint",
+				"description": "This endpoint returns a document or part of a document.",
+				"operationId": "api:document",
+				"tags": ["document"],
+				"parameters": [
+					{
+						"name": "resource",
+						"in": "query",
+						"required": true,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "ref",
+						"in": "query",
+						"required": false,
+						"description": "NOT used with start and end",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "start",
+						"in": "query",
+						"required": false,
+						"description": "NOT used if a ref is specified, requires end as well",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "end",
+						"in": "query",
+						"required": false,
+						"description": "NOT used if a ref is specified, requires start as well",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "tree",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "mediaType",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string",
+							"enum": [
+								"html",
+								"xml"
+							]
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Succesful response"
+					},
+					"400": {
+						"description": "Bad request"
+					},
+					"500": {
+						"description": "Internal server error"
+					}
+				}
+			}
+		}
+	},
+	"security": [
+		{
+			"cookieAuth": []
+		},
+		{
+			"basicAuth": []
+		}
+	]
+}
