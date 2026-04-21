@@ -124,7 +124,12 @@
 						"in": "query",
 						"required": false,
 						"schema": {
-							"type": "string"
+							"type": "string",
+							"enum": [
+								"movement",
+								"page"
+							],
+							"default": "movement"
 						}
 					},
 					{
@@ -136,7 +141,8 @@
 							"enum": [
 								"html",
 								"xml"
-							]
+							],
+							"default": "xml"
 						}
 					}
 				],

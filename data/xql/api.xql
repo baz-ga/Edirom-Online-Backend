@@ -11,6 +11,7 @@ import module namespace auth="http://e-editiones.org/roaster/auth";
 import module namespace rutil="http://e-editiones.org/roaster/util";
 import module namespace errors="http://e-editiones.org/roaster/errors";
 import module namespace cookie="http://e-editiones.org/roaster/cookie";
+import module namespace dts-document="http://www.edirom.de/api/dts-document" at "../xqm/dts-document.xqm";
 
 
 (:~
@@ -49,7 +50,14 @@ declare function api:navigation ($request as map(*)) {
 };
 
 declare function api:document ($request as map(*)) {
-    <message>This is a document endpoint.</message>
+    dts-document:document(
+        xs:string($request?parameters?resource),
+        if (exists($request?parameters?ref)) then xs:string($request?parameters?ref) else "",
+        if (exists($request?parameters?start)) then xs:string($request?parameters?start) else "",
+        if (exists($request?parameters?end)) then xs:string($request?parameters?end) else "",
+        xs:string($request?parameters?tree),
+        xs:string($request?parameters?mediaType)
+    )
 };
 (: end of route handlers :)
 
