@@ -78,73 +78,165 @@
 			}
 		},
 		"/api/document": {
-			"get": {
-				"summary": "Document endpoint",
-				"description": "This endpoint returns a document or part of a document.",
+				"get": {
+					"summary": "Document endpoint",
+					"description": "This endpoint returns a document or part of a document.",
 				"operationId": "api:document",
 				"tags": ["document"],
 				"parameters": [
-					{
-						"name": "resource",
-						"in": "query",
-						"required": true,
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "ref",
+						{
+							"name": "resource",
+							"in": "query",
+							"required": true,
+							"schema": {
+								"type": "string"
+							},
+							"examples": {
+								"Klarinettenquintett": {
+									"summary": "Klarinettenquintett",
+									"value": "xmldb:exist:///db/apps/weber-klarinettenquintett-eol-emeritus/sources/source-4-MEI.xml"
+								}
+							}
+						},
+						{
+							"name": "ref",
+							"in": "query",
+						"required": false,
+							"description": "NOT used with start and end",
+							"schema": {
+								"type": "string"
+							},
+							"examples": {
+								"Empty": {
+									"summary": "Empty",
+									"value": ""
+								},
+								"Allegro": {
+									"summary": "Allegro",
+									"value": "tf280fcd0-c18e-42b4-8ec3-8166ac51f7cf"
+								},
+								"Fantasia": {
+									"summary": "Fantasia",
+									"value": "x7a9f679a-a4d3-4d02-8a93-1f697f2f9ea2"
+								},
+								"Menuetto Capriccio": {
+									"summary": "Menuetto Capriccio",
+									"value": "x19d7fd5c-b8b4-47d8-8967-c6a27b5cd1a9"
+								},
+								"Rondo": {
+									"summary": "Rondo",
+									"value": "xf1c9b711-1ab7-47c5-afea-e0551799da6c"
+								}
+							}
+						},
+						{
+							"name": "start",
 						"in": "query",
 						"required": false,
-						"description": "NOT used with start and end",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "start",
+							"description": "NOT used if a ref is specified, requires end as well",
+							"schema": {
+								"type": "string"
+							},
+							"examples": {
+								"Empty": {
+									"summary": "Empty",
+									"value": ""
+								},
+								"Allegro": {
+									"summary": "Allegro",
+									"value": "tf280fcd0-c18e-42b4-8ec3-8166ac51f7cf"
+								},
+								"Fantasia": {
+									"summary": "Fantasia",
+									"value": "x7a9f679a-a4d3-4d02-8a93-1f697f2f9ea2"
+								},
+								"Menuetto Capriccio": {
+									"summary": "Menuetto Capriccio",
+									"value": "x19d7fd5c-b8b4-47d8-8967-c6a27b5cd1a9"
+								},
+								"Rondo": {
+									"summary": "Rondo",
+									"value": "xf1c9b711-1ab7-47c5-afea-e0551799da6c"
+								}
+							}
+						},
+						{
+							"name": "end",
 						"in": "query",
 						"required": false,
-						"description": "NOT used if a ref is specified, requires end as well",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "end",
-						"in": "query",
-						"required": false,
-						"description": "NOT used if a ref is specified, requires start as well",
-						"schema": {
-							"type": "string"
-						}
-					},
-					{
-						"name": "tree",
-						"in": "query",
+							"description": "NOT used if a ref is specified, requires start as well",
+							"schema": {
+								"type": "string"
+							},
+							"examples": {
+								"Empty": {
+									"summary": "Empty",
+									"value": ""
+								},
+								"Allegro": {
+									"summary": "Allegro",
+									"value": "tf280fcd0-c18e-42b4-8ec3-8166ac51f7cf"
+								},
+								"Fantasia": {
+									"summary": "Fantasia",
+									"value": "x7a9f679a-a4d3-4d02-8a93-1f697f2f9ea2"
+								},
+								"Menuetto Capriccio": {
+									"summary": "Menuetto Capriccio",
+									"value": "x19d7fd5c-b8b4-47d8-8967-c6a27b5cd1a9"
+								},
+								"Rondo": {
+									"summary": "Rondo",
+									"value": "xf1c9b711-1ab7-47c5-afea-e0551799da6c"
+								}
+							}
+						},
+						{
+							"name": "tree",
+							"in": "query",
 						"required": false,
 						"schema": {
 							"type": "string",
-							"enum": [
-								"movement",
-								"page"
-							],
-							"default": "movement"
-						}
-					},
-					{
-						"name": "mediaType",
-						"in": "query",
+								"enum": [
+									"movement",
+									"page"
+								],
+								"default": "movement"
+							},
+							"examples": {
+								"movement": {
+									"summary": "movement",
+									"value": "movement"
+								},
+								"page": {
+									"summary": "page",
+									"value": "page"
+								}
+							}
+						},
+						{
+							"name": "mediaType",
+							"in": "query",
 						"required": false,
 						"schema": {
 							"type": "string",
-							"enum": [
-								"html",
-								"xml"
-							],
-							"default": "xml"
+								"enum": [
+									"html",
+									"xml"
+								],
+								"default": "xml"
+							},
+							"examples": {
+								"xml": {
+									"summary": "xml",
+									"value": "xml"
+								},
+								"html": {
+									"summary": "html",
+									"value": "html"
+								}
+							}
 						}
-					}
 				],
 				"responses": {
 					"200": {
