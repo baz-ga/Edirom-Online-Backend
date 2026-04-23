@@ -6,6 +6,8 @@ import module namespace eutil = "http://www.edirom.de/xquery/eutil" at "eutil.xq
 
 declare namespace dts = "https://w3id.org/dts/api#";
 declare namespace mei = "http://www.music-encoding.org/ns/mei";
+declare namespace system = "http://exist-db.org/xquery/system";
+declare namespace transform = "http://exist-db.org/xquery/transform";
 
 declare function dts-document:createMEIOutput(
     $selection as node()*,
@@ -16,16 +18,13 @@ declare function dts-document:createMEIOutput(
         element { node-name($document/*) } {
             namespace xlink { "http://www.w3.org/1999/xlink" },
             $document/*/@*,
-            $document//mei:meiHead,
-            <music xmlns="http://www.music-encoding.org/ns/mei">
-                        <facsimile/>
-                        <body>
-                            {$selection}
-                        </body>
-                    </music>
-                }
-            else
-                error(xs:QName("UnsupportedFormat"), "The provided document format is not supported. Namespace: " || $namespace )
+            (: $document//mei:meiHead, :)
+            <dts:wrapper xmlns:dts="https://w3id.org/dts/api#">
+                {$selection}
+            </dts:wrapper>
+        }
+    else
+        error(xs:QName("UnsupportedFormat"), "The provided document format is not supported. Namespace: " || $namespace )
 };
 
 
@@ -69,6 +68,9 @@ declare function dts-document:document(
                 $document
             else
                 ()
+        
+        let $base := concat(replace(system:get-module-load-path(), 'embedded-eXist-server', ''), '/../xslt/')
+        let $output := transform:transform($output, concat($base, 'edirom_prepareAnnotsForRendering.xsl'), <parameters/>)
             
         return
             document { $output
