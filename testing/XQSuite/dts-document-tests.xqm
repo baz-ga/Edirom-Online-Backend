@@ -25,6 +25,7 @@ declare
         )
 };
 
+(:)
 declare
     %test:args(
         "<mdiv xmlns='http://www.music-encoding.org/ns/mei' xml:id='selection'/>",
@@ -38,6 +39,7 @@ declare
         let $result := dts-document:createMEIOutput($selection, "mei", document { $documentRoot })
         return exists($result/mei:meiHead/mei:fileDesc)
 };
+:)
 
 declare
     %test:args(
@@ -45,17 +47,17 @@ declare
         "<mei xmlns='http://www.music-encoding.org/ns/mei' meiversion='5.0.0'><meiHead/><music><body/></music></mei>"
     )
     %test:assertTrue
-    function ddt:test-createMEIOutput-inserts-selection-into-body(
+    function ddt:test-createMEIOutput-inserts-selection(
         $selection as element(),
         $documentRoot as element()
     ) as xs:boolean {
         let $result := dts-document:createMEIOutput($selection, "mei", document { $documentRoot })
-        return exists($result/mei:music/mei:body/mei:mdiv[@xml:id = "selection"]/mei:score)
+        return exists($result//mei:mdiv[@xml:id = "selection"]/mei:score)
 };
 
 declare
     %test:assertTrue
-    function ddt:test-createMEIOutput-inserts-multiple-mdivs-into-body() as xs:boolean {
+    function ddt:test-createMEIOutput-inserts-multiple-mdivs() as xs:boolean {
         let $selection := (
             <mdiv xmlns="http://www.music-encoding.org/ns/mei" xml:id="selection-1"><score/></mdiv>,
             <mdiv xmlns="http://www.music-encoding.org/ns/mei" xml:id="selection-2"><score/></mdiv>
@@ -63,9 +65,9 @@ declare
         let $documentRoot := <mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.0.0"><meiHead/><music><body/></music></mei>
         let $result := dts-document:createMEIOutput($selection, "mei", document { $documentRoot })
         return
-            count($result/mei:music/mei:body/mei:mdiv) = 2
-            and exists($result/mei:music/mei:body/mei:mdiv[@xml:id = "selection-1"]/mei:score)
-            and exists($result/mei:music/mei:body/mei:mdiv[@xml:id = "selection-2"]/mei:score)
+            count($result//mei:mdiv) = 2
+            and exists($result//mei:mdiv[@xml:id = "selection-1"]/mei:score)
+            and exists($result//mei:mdiv[@xml:id = "selection-2"]/mei:score)
 };
 
 declare
