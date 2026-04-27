@@ -3,6 +3,7 @@ xquery version "3.1";
 declare namespace api="http://www.edirom.de/api";
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace svg="http://www.w3.org/2000/svg";
+declare namespace exist="http://exist.sourceforge.net/NS/exist";
 
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace roaster="http://e-editiones.org/roaster";
@@ -50,14 +51,21 @@ declare function api:navigation ($request as map(*)) {
 };
 
 declare function api:document ($request as map(*)) {
-    dts-document:document(
-        xs:string($request?parameters?resource),
+    let $base-url := substring-before(request:get-url(), "/api")
+    let $resource := xs:string($request?parameters?resource)
+    let $mediaType := xs:string($request?parameters?mediaType)
+    let $document := dts-document:document(
+        $resource,
         if (exists($request?parameters?ref)) then xs:string($request?parameters?ref) else "",
         if (exists($request?parameters?start)) then xs:string($request?parameters?start) else "",
         if (exists($request?parameters?end)) then xs:string($request?parameters?end) else "",
         xs:string($request?parameters?tree),
-        xs:string($request?parameters?mediaType)
+        $mediaType
     )
+    let $headers := map {
+        "Link": concat($base-url, '/api/collection/?resource=', $resource, '; rel="collection"')
+    }
+    return roaster:response(200, $mediaType, $document, $headers)
 };
 (: end of route handlers :)
 

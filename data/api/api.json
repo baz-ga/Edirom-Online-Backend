@@ -228,13 +228,17 @@
 								"default": "application/mei+xml"
 							},
 							"examples": {
-								"xml": {
-									"summary": "xml",
-									"value": "xml"
+								"mei": {
+									"summary": "mei",
+									"value": "application/mei+xml"
+								},
+								"tei": {
+									"summary": "tei",
+									"value": "application/tei+xml"
 								},
 								"html": {
 									"summary": "html",
-									"value": "html"
+									"value": "text/html"
 								}
 							}
 						}
