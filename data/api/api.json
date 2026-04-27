@@ -81,9 +81,9 @@
 				"get": {
 					"summary": "Document endpoint",
 					"description": "This endpoint returns a document or part of a document.",
-				"operationId": "api:document",
-				"tags": ["document"],
-				"parameters": [
+					"operationId": "api:document",
+					"tags": ["document"],
+					"parameters": [
 						{
 							"name": "resource",
 							"in": "query",
@@ -101,7 +101,7 @@
 						{
 							"name": "ref",
 							"in": "query",
-						"required": false,
+							"required": false,
 							"description": "NOT used with start and end",
 							"schema": {
 								"type": "string"
@@ -131,8 +131,8 @@
 						},
 						{
 							"name": "start",
-						"in": "query",
-						"required": false,
+							"in": "query",
+							"required": false,
 							"description": "NOT used if a ref is specified, requires end as well",
 							"schema": {
 								"type": "string"
@@ -162,8 +162,8 @@
 						},
 						{
 							"name": "end",
-						"in": "query",
-						"required": false,
+							"in": "query",
+							"required": false,
 							"description": "NOT used if a ref is specified, requires start as well",
 							"schema": {
 								"type": "string"
@@ -194,9 +194,9 @@
 						{
 							"name": "tree",
 							"in": "query",
-						"required": false,
-						"schema": {
-							"type": "string",
+							"required": false,
+							"schema": {
+								"type": "string",
 								"enum": [
 									"movement",
 									"page"
@@ -217,14 +217,15 @@
 						{
 							"name": "mediaType",
 							"in": "query",
-						"required": false,
-						"schema": {
-							"type": "string",
+							"required": false,
+							"schema": {
+								"type": "string",
 								"enum": [
-									"html",
-									"xml"
+									"text/html",
+									"application/mei+xml",
+									"application/tei+xml"
 								],
-								"default": "xml"
+								"default": "application/mei+xml"
 							},
 							"examples": {
 								"xml": {
