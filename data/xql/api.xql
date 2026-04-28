@@ -54,18 +54,50 @@ declare function api:document ($request as map(*)) {
     let $base-url := substring-before(request:get-url(), "/api")
     let $resource := xs:string($request?parameters?resource)
     let $mediaType := xs:string($request?parameters?mediaType)
-    let $document := dts-document:document(
-        $resource,
-        if (exists($request?parameters?ref)) then xs:string($request?parameters?ref) else "",
-        if (exists($request?parameters?start)) then xs:string($request?parameters?start) else "",
-        if (exists($request?parameters?end)) then xs:string($request?parameters?end) else "",
-        xs:string($request?parameters?tree),
-        $mediaType
-    )
     let $headers := map {
         "Link": concat($base-url, '/api/collection/?resource=', $resource, '; rel="collection"')
     }
-    return roaster:response(200, $mediaType, $document, $headers)
+    return
+        try {
+            let $document := dts-document:document(
+                $resource,
+                if (exists($request?parameters?ref)) then xs:string($request?parameters?ref) else "",
+                if (exists($request?parameters?start)) then xs:string($request?parameters?start) else "",
+                if (exists($request?parameters?end)) then xs:string($request?parameters?end) else "",
+                xs:string($request?parameters?tree),
+                $mediaType
+            )
+            return
+                roaster:response(200, $mediaType, $document, $headers)
+        } catch dts-document:UnsupportedMediaTypeError {
+            roaster:response(404, "application/json", map {
+                "error": "UnsupportedMediaType",
+                "message": $err:description
+            })
+        } catch dts-document:InvalidParametersError {
+            roaster:response(404, "application/json", map {
+                "error": "InvalidParameters",
+                "message": $err:description
+            })
+        } catch dts-document:UnsupportedDocumentFormatError {
+            roaster:response(404, "application/json", map {
+                "error": "UnsupportedDocumentFormat",
+                "message": $err:description
+            })
+        } catch dts-document:NotFoundError {
+            roaster:response(404, "application/json", map {
+                "error": "NotFound",
+                "message": $err:description
+            })
+        } catch * {
+            roaster:response(500, "application/json", map {
+                "error": $err:code,
+                "message": $err:description
+            })
+        }
+    
+
+    
 };
 (: end of route handlers :)
 
