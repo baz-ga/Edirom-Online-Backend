@@ -11,22 +11,38 @@ declare namespace transform = "http://exist-db.org/xquery/transform";
 
 declare function dts-document:createMEIOutput(
     $selection as node()*,
-    $namespace as xs:string,
     $document as node()
 ) as node()? {
-    if ($namespace eq 'mei') then
-        element { node-name($document/*) } {
-            namespace xlink { "http://www.w3.org/1999/xlink" },
-            $document/*/@*,
-            (: $document//mei:meiHead, :)
-            <dts:wrapper xmlns:dts="https://w3id.org/dts/api#">
-                {$selection}
-            </dts:wrapper>
-        }
-    else
-        error(xs:QName("UnsupportedFormat"), "The provided document format is not supported. Namespace: " || $namespace )
+    element { node-name($document/*) } {
+        namespace xlink { "http://www.w3.org/1999/xlink" },
+        $document/*/@*,
+        (: $document//mei:meiHead, :)
+        <dts:wrapper xmlns:dts="https://w3id.org/dts/api#">
+            {$selection}
+        </dts:wrapper>
+    }
 };
 
+declare function dts-document:MEISelect(
+    $document as node(),
+    $ref as xs:string?,
+    $start as xs:string?,
+    $end as xs:string?,
+    $tree as xs:string?
+) as node()* {
+    if ($tree eq "musicStructure" and $ref) then
+        $document/id($ref)
+    else if ($tree eq "musicStructure" and $start and $end) then
+        (
+            $document/id($start),
+            $document/id($start)/following-sibling::*[
+                . << $document/id($end)
+            ],
+            $document/id($end)
+        )
+    else
+        ()
+};
 
 declare function dts-document:document(
     $resource as xs:string?,
@@ -49,25 +65,14 @@ declare function dts-document:document(
 
 
         let $output := 
-            if ($tree eq "musicStructure" and $ref) then
-                let $selection := ($document/id($ref))
-                return
-                    dts-document:createMEIOutput($selection, $namespace, $document)
-
-            else if ($tree eq "musicStructure" and $start and $end) then
-                let $selection := (
-                    $document/id($start),
-                    $document/id($start)/following-sibling::*[
-                        . << $document/id($end)
-                    ],
-                    $document/id($end)
-                )
-                return
-                    dts-document:createMEIOutput($selection, $namespace, $document)
-            else if ($tree eq "musicStructure") then
+            if (not($ref) and not($start) and not($end)) then
+            (: TODO check if the mediaType corresponds to the document type :)
                 $document
+            else if ($namespace eq "mei") then
+                let $selection := dts-document:MEISelect($document, $ref, $start, $end, $tree)
+                return dts-document:createMEIOutput($selection, $document)
             else
-                ()
+                error(xs:QName("UnsupportedFormat"), "The provided document format is not supported. Namespace: " || $namespace )
         
         let $base := concat(replace(system:get-module-load-path(), 'embedded-eXist-server', ''), '/../xslt/')
         let $output := transform:transform($output, concat($base, 'edirom_prepareAnnotsForRendering.xsl'), <parameters/>)
