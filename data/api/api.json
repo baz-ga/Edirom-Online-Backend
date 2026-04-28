@@ -198,19 +198,23 @@
 							"schema": {
 								"type": "string",
 								"enum": [
-									"movement",
-									"page"
+									"musicStructure",
+									"paginationStructure"
 								],
-								"default": "movement"
+								"default": "musicStructure"
 							},
 							"examples": {
-								"movement": {
-									"summary": "movement",
-									"value": "movement"
+								"Empty": {
+									"summary": "Empty",
+									"value": ""
 								},
-								"page": {
-									"summary": "page",
-									"value": "page"
+								"musicStructure": {
+									"summary": "musicStructure",
+									"value": "musicStructure"
+								},
+								"paginationStructure": {
+									"summary": "paginationStructure",
+									"value": "paginationStructure"
 								}
 							}
 						},

@@ -49,12 +49,12 @@ declare function dts-document:document(
 
 
         let $output := 
-            if ($tree = "movement" and $ref) then
+            if ($tree eq "musicStructure" and $ref) then
                 let $selection := ($document/id($ref))
                 return
                     dts-document:createMEIOutput($selection, $namespace, $document)
 
-            else if ($tree = "movement" and $start and $end) then
+            else if ($tree eq "musicStructure" and $start and $end) then
                 let $selection := (
                     $document/id($start),
                     $document/id($start)/following-sibling::*[
@@ -64,7 +64,7 @@ declare function dts-document:document(
                 )
                 return
                     dts-document:createMEIOutput($selection, $namespace, $document)
-            else if ($tree eq "movement") then
+            else if ($tree eq "musicStructure") then
                 $document
             else
                 ()
