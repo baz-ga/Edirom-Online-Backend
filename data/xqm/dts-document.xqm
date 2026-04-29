@@ -14,18 +14,26 @@ declare variable $dts-document:UNSUPPORTED_MEDIA_TYPE := QName("http://www.ediro
 declare variable $dts-document:UNSUPPORTED_DOCUMENT_FORMAT := QName("http://www.edirom.de/api/dts-document", "UnsupportedDocumentFormatError");
 declare variable $dts-document:NOT_FOUND := QName("http://www.edirom.de/api/dts-document", "NotFoundError");
 
-declare function dts-document:createMEIOutput(
+declare function dts-document:wrapMEISelection(
     $selection as node()*,
     $document as node()
 ) as node()? {
-    element { node-name($document/*) } {
-        namespace xlink { "http://www.w3.org/1999/xlink" },
-        $document/*/@*,
-        (: $document//mei:meiHead, :)
-        <dts:wrapper xmlns:dts="https://w3id.org/dts/api#">
-            {$selection}
-        </dts:wrapper>
-    }
+    if (node-name($selection[1]) eq QName("http://www.music-encoding.org/ns/mei", "mdiv")) then
+        <mei xmlns="http://www.music-encoding.org/ns/mei"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            meiversion="{$document//mei:mei/@meiversion}">
+            {$document//mei:meiHead}
+            <music>
+                <facsimile/>
+                <body>
+                    <dts:wrapper xmlns:dts="https://w3id.org/dts/api#">
+                        {$selection}
+                    </dts:wrapper>
+                </body>
+            </music>
+        </mei>
+    else
+        error($dts-document:INVALID_PARAMETERS, "Selection not implemented. Selected element: " || node-name($selection[1]))
 };
 
 declare function dts-document:MEISelect(
@@ -35,26 +43,32 @@ declare function dts-document:MEISelect(
     $end as xs:string?,
     $tree as xs:string?
 ) as node()* {
-    if ($tree eq "musicStructure" and $ref) then
-        $document/id($ref)
-    else if ($tree eq "musicStructure" and $start and $end) then
-        let $startNode := $document/id($start)
-        let $endNode := $document/id($end)
-            return
-                if ($start eq $end) then
-                    $startNode
-                else if ($startNode and $endNode and ($startNode << $endNode)) then
-                    (
-                        $startNode,
-                        $startNode/following-sibling::*[
-                            . << $endNode
-                        ],
-                        $endNode
-                    )
-                else
-                    ()
-    else
-        ()
+    let $selection :=
+        if ($tree eq "musicStructure" and $ref) then
+            $document/id($ref)
+        else if ($tree eq "musicStructure" and $start and $end) then
+            let $startNode := $document/id($start)
+            let $endNode := $document/id($end)
+                return
+                    if ($start eq $end) then
+                        $startNode
+                    else if ($startNode and $endNode and ($startNode << $endNode)) then
+                        (
+                            $startNode,
+                            $startNode/following-sibling::*[
+                                . << $endNode
+                            ],
+                            $endNode
+                        )
+                    else
+                        ()
+        else
+            ()
+    return
+        if ($selection) then
+            dts-document:wrapMEISelection($selection, $document)
+        else
+            error($dts-document:NOT_FOUND, "The specified citable units did not match any element in the document.")
 };
 
 declare function dts-document:isMediaTypeCompatible(
@@ -104,12 +118,7 @@ declare function dts-document:document(
             else if (not($ref) and not($start) and not($end)) then
                 $document
             else if ($namespace eq "mei") then
-                let $selection := dts-document:MEISelect($document, $ref, $start, $end, $tree)
-                return 
-                    if ($selection) then
-                        dts-document:createMEIOutput($selection, $document)
-                    else
-                        error($dts-document:NOT_FOUND, "The specified citable units did not match any element in the document.")
+                dts-document:MEISelect($document, $ref, $start, $end, $tree)                    
             else
                 error($dts-document:UNSUPPORTED_DOCUMENT_FORMAT, "The format of the requested document is not supported. Namespace: " || $namespace )
         
