@@ -38,13 +38,21 @@ declare function dts-document:MEISelect(
     if ($tree eq "musicStructure" and $ref) then
         $document/id($ref)
     else if ($tree eq "musicStructure" and $start and $end) then
-        (
-            $document/id($start),
-            $document/id($start)/following-sibling::*[
-                . << $document/id($end)
-            ],
-            $document/id($end)
-        )
+        let $startNode := $document/id($start)
+        let $endNode := $document/id($end)
+            return
+                if ($start eq $end) then
+                    $startNode
+                else if ($startNode and $endNode and ($startNode << $endNode)) then
+                    (
+                        $startNode,
+                        $startNode/following-sibling::*[
+                            . << $endNode
+                        ],
+                        $endNode
+                    )
+                else
+                    ()
     else
         ()
 };
@@ -109,20 +117,5 @@ declare function dts-document:document(
         let $output := transform:transform($output, concat($base, 'edirom_prepareAnnotsForRendering.xsl'), <parameters/>)
             
         return
-            document { $output
-                (:
-                <document>
-                    <message>This is a document endpoint.</message>
-                    <parameters>
-                        <resource>{if (exists($resource)) then $resource else "Not provided"}</resource>
-                        <ref>{if (exists($ref)) then $ref else "Not provided"}</ref>
-                        <start>{if (exists($start)) then $start else "Not provided"}</start>
-                        <end>{if (exists($end)) then $end else "Not provided"}</end>
-                        <tree>{if (exists($tree)) then $tree else "Not provided"}</tree>
-                        <mediaType>{if (exists($mediaType)) then $mediaType else "Not provided"}</mediaType>
-                    </parameters>
-                    <result>{if (exists($output)) then $output else "No tree fragment requested"}</result>
-                </document>
-                :)
-            }
+            document { $output }
 };
