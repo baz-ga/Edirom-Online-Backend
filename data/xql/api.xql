@@ -1,19 +1,27 @@
 xquery version "3.1";
+(:
+ : For LICENSE-Details please refer to the LICENSE file in the root directory of this repository.
+ :)
+
+(: NAMESPACE DECLARATIONS ================================================== :)
 
 declare namespace api="http://www.edirom.de/api";
 declare namespace output="http://www.w3.org/2010/xslt-xquery-serialization";
 declare namespace svg="http://www.w3.org/2000/svg";
 declare namespace exist="http://exist.sourceforge.net/NS/exist";
 
+(: IMPORTS ================================================================= :)
+
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace roaster="http://e-editiones.org/roaster";
 
 import module namespace auth="http://e-editiones.org/roaster/auth";
 import module namespace rutil="http://e-editiones.org/roaster/util";
-import module namespace errors="http://e-editiones.org/roaster/errors";
+import module namespace errors="http://www.edirom.de/xquery/errors" at "../xqm/errors.xqm";
 import module namespace cookie="http://e-editiones.org/roaster/cookie";
 import module namespace dts-document="http://www.edirom.de/api/dts-document" at "../xqm/dts-document.xqm";
 
+(: FUNCTION DECLARATIONS =================================================== :)
 
 (:~
  : list of definition files to use
@@ -69,22 +77,22 @@ declare function api:document ($request as map(*)) {
             )
             return
                 roaster:response(200, $mediaType, $document, $headers)
-        } catch dts-document:UnsupportedMediaTypeError {
+        } catch errors:UnsupportedMediaTypeError {
             roaster:response(404, "application/json", map {
                 "error": "UnsupportedMediaType",
                 "message": $err:description
             })
-        } catch dts-document:InvalidParametersError {
+        } catch errors:InvalidParametersError {
             roaster:response(404, "application/json", map {
                 "error": "InvalidParameters",
                 "message": $err:description
             })
-        } catch dts-document:UnsupportedDocumentFormatError {
+        } catch errors:UnsupportedDocumentFormatError {
             roaster:response(404, "application/json", map {
                 "error": "UnsupportedDocumentFormat",
                 "message": $err:description
             })
-        } catch dts-document:NotFoundError {
+        } catch errors:NOT_FOUND {
             roaster:response(404, "application/json", map {
                 "error": "NotFound",
                 "message": $err:description

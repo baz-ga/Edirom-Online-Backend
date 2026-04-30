@@ -1,18 +1,28 @@
 xquery version "3.1";
+(:
+ : For LICENSE-Details please refer to the LICENSE file in the root directory of this repository.
+ :)
 
+ (:~
+ : This module provides library functions for handling errors
+ :
+ : @author Francesco Maccarini
+ :)
 module namespace dts-document = "http://www.edirom.de/api/dts-document";
 
+(: IMPORTS ================================================================= :)
+
 import module namespace eutil = "http://www.edirom.de/xquery/eutil" at "eutil.xqm";
+import module namespace errors = "http://www.edirom.de/xquery/errors" at "errors.xqm";
+
+(: NAMESPACE DECLARATIONS ================================================== :)
 
 declare namespace dts = "https://w3id.org/dts/api#";
 declare namespace mei = "http://www.music-encoding.org/ns/mei";
 declare namespace system = "http://exist-db.org/xquery/system";
 declare namespace transform = "http://exist-db.org/xquery/transform";
 
-declare variable $dts-document:INVALID_PARAMETERS := QName("http://www.edirom.de/api/dts-document", "InvalidParametersError");
-declare variable $dts-document:UNSUPPORTED_MEDIA_TYPE := QName("http://www.edirom.de/api/dts-document", "UnsupportedMediaTypeError");
-declare variable $dts-document:UNSUPPORTED_DOCUMENT_FORMAT := QName("http://www.edirom.de/api/dts-document", "UnsupportedDocumentFormatError");
-declare variable $dts-document:NOT_FOUND := QName("http://www.edirom.de/api/dts-document", "NotFoundError");
+(: FUNCTION DECLARATIONS =================================================== :)
 
 declare function dts-document:wrapMEISelection(
     $selection as node()*,
@@ -33,7 +43,7 @@ declare function dts-document:wrapMEISelection(
             </music>
         </mei>
     else
-        error($dts-document:INVALID_PARAMETERS, "Selection not implemented. Selected element: " || node-name($selection[1]))
+        error($errors:INVALID_PARAMETERS, "Selection not implemented. Selected element: " || node-name($selection[1]))
 };
 
 declare function dts-document:MEISelect(
@@ -68,7 +78,7 @@ declare function dts-document:MEISelect(
         if ($selection) then
             dts-document:wrapMEISelection($selection, $document)
         else
-            error($dts-document:NOT_FOUND, "The specified citable units did not match any element in the document.")
+            error($errors:NOT_FOUND, "The specified citable units did not match any element in the document.")
 };
 
 declare function dts-document:isMediaTypeCompatible(
@@ -96,16 +106,16 @@ declare function dts-document:document(
     $mediaType as xs:string?
 ) as document-node() {
     if ($ref and ($start or $end)) then
-        error($dts-document:INVALID_PARAMETERS, "The 'ref' parameter cannot be used together with 'start' or 'end'.")
+        error($errors:INVALID_PARAMETERS, "The 'ref' parameter cannot be used together with 'start' or 'end'.")
     else if (($start and not($end)) or ($end and not($start))) then
-        error($dts-document:INVALID_PARAMETERS, "Both 'start' and 'end' parameters must be provided together.")
+        error($errors:INVALID_PARAMETERS, "Both 'start' and 'end' parameters must be provided together.")
     else
         let $document := doc($resource)/root()
         let $namespace := 
             if ($document) then
                 eutil:getNamespace($document/*)
             else
-                error($dts-document:NOT_FOUND, "The requested resource was not found.")
+                error($errors:NOT_FOUND, "The requested resource was not found.")
 
         let $mediaTypeCompatible := dts-document:isMediaTypeCompatible($mediaType, $namespace)
 
@@ -114,13 +124,13 @@ declare function dts-document:document(
 
         let $output := 
             if (not($mediaTypeCompatible)) then
-                error($dts-document:UNSUPPORTED_MEDIA_TYPE, "The requested media type is not compatible with the document format. Media type: " || $mediaType || ", Namespace: " || $namespace)
+                error($errors:UNSUPPORTED_MEDIA_TYPE, "The requested media type is not compatible with the document format. Media type: " || $mediaType || ", Namespace: " || $namespace)
             else if (not($ref) and not($start) and not($end)) then
                 $document
             else if ($namespace eq "mei") then
                 dts-document:MEISelect($document, $ref, $start, $end, $tree)                    
             else
-                error($dts-document:UNSUPPORTED_DOCUMENT_FORMAT, "The format of the requested document is not supported. Namespace: " || $namespace )
+                error($errors:UNSUPPORTED_DOCUMENT_FORMAT, "The format of the requested document is not supported. Namespace: " || $namespace )
         
         let $base := concat(replace(system:get-module-load-path(), 'embedded-eXist-server', ''), '/../xslt/')
         let $output := transform:transform($output, concat($base, 'edirom_prepareAnnotsForRendering.xsl'), <parameters/>)
