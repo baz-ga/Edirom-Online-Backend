@@ -77,31 +77,8 @@ declare function api:document ($request as map(*)) {
             )
             return
                 roaster:response(200, $mediaType, $document, $headers)
-        } catch errors:UnsupportedMediaTypeError {
-            roaster:response(404, "application/json", map {
-                "error": "UnsupportedMediaType",
-                "message": $err:description
-            })
-        } catch errors:InvalidParametersError {
-            roaster:response(404, "application/json", map {
-                "error": "InvalidParameters",
-                "message": $err:description
-            })
-        } catch errors:UnsupportedDocumentFormatError {
-            roaster:response(404, "application/json", map {
-                "error": "UnsupportedDocumentFormat",
-                "message": $err:description
-            })
-        } catch errors:NOT_FOUND {
-            roaster:response(404, "application/json", map {
-                "error": "NotFound",
-                "message": $err:description
-            })
         } catch * {
-            roaster:response(500, "application/json", map {
-                "error": $err:code,
-                "message": $err:description
-            })
+            errors:sendResponse($err:code, $err:description)
         }
     
 
