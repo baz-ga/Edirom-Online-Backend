@@ -152,21 +152,48 @@ declare
 
 declare
     (: Output test case placeholders:
-    %test:args("resource-id", (), (), (), (), ())
-    %test:assertEquals("<expected-output/>")
-
-    %test:args("resource-id", "ref-id", (), (), "musicStructure", "application/xml")
-    %test:assertEquals("<expected-output/>")
-    :)
-
-    (: Error test case placeholders:
-    %test:args("resource-id", "missing-ref", (), (), "musicStructure", "application/xml")
-    %test:assertError("errors:NotFoundError")
-
     %test:args("resource-id", (), "missing-start", "missing-end", "musicStructure", "application/xml")
     %test:assertError("errors:NotFoundError")
     :)
-
+    (: Valid requests :)
+    (: retrieve full mei :)
+    %test:arg("resource", "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/mei-score.xml")
+    %test:arg("ref") %test:arg("start") %test:arg("end") %test:arg("tree")
+    %test:arg("mediaType", "application/xml")
+    %test:assertXPath("/Q{http://www.music-encoding.org/ns/mei}mei[@xml:id='test-mei-score']")
+    (: retrieve a specific mdiv by ref :)
+    %test:arg("resource", "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/mei-score.xml")
+    %test:arg("ref", "test-mdiv-1")
+    %test:arg("start") %test:arg("end")
+    %test:arg("tree", "musicStructure")
+    %test:arg("mediaType", "application/xml")
+    %test:assertXPath("/Q{http://www.music-encoding.org/ns/mei}mei//Q{https://w3id.org/dts/api#}wrapper/Q{http://www.music-encoding.org/ns/mei}mdiv[@xml:id='test-mdiv-1']")
+    (: retrieve a range of mdivs by start and end :)
+    %test:arg("resource", "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/mei-score.xml")
+    %test:arg("ref")
+    %test:arg("start", "test-mdiv-1")
+    %test:arg("end", "test-mdiv-2")
+    %test:arg("tree", "musicStructure")
+    %test:arg("mediaType", "application/xml")
+    %test:assertXPath("/Q{http://www.music-encoding.org/ns/mei}mei//Q{https://w3id.org/dts/api#}wrapper/Q{http://www.music-encoding.org/ns/mei}mdiv[@xml:id='test-mdiv-1']")
+    %test:assertXPath("/Q{http://www.music-encoding.org/ns/mei}mei//Q{https://w3id.org/dts/api#}wrapper/Q{http://www.music-encoding.org/ns/mei}mdiv[@xml:id='test-mdiv-2']")
+    (: Errors :)
+    (: ask both for ref and start/end :)
+    %test:arg("resource", "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/mei-score.xml")
+    %test:arg("ref", "test-mdiv-1")
+    %test:arg("start", "test-mdiv-1")
+    %test:arg("end", "test-mdiv-2")
+    %test:arg("tree", "musicStructure")
+    %test:arg("mediaType", "application/xml")
+    %test:assertError("errors:InvalidParametersError")
+    (: ask for start without end :)
+    %test:arg("resource", "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/mei-score.xml")
+    %test:arg("ref")
+    %test:arg("start", "test-mdiv-1")
+    %test:arg("end")
+    %test:arg("tree", "musicStructure")
+    %test:arg("mediaType", "application/xml")
+    %test:assertError("errors:InvalidParametersError")
     function ddt:test-document(
         $resource as xs:string,
         $ref as xs:string?,
@@ -174,6 +201,6 @@ declare
         $end as xs:string?,
         $tree as xs:string?,
         $mediaType as xs:string?
-    ) as node()* { 
+    ) as document-node() { 
         dts-document:document($resource, $ref, $start, $end, $tree, $mediaType) 
 };

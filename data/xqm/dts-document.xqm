@@ -124,7 +124,7 @@ declare function dts-document:document(
             if (not($mediaTypeCompatible)) then
                 error($errors:UNSUPPORTED_MEDIA_TYPE, "The requested media type is not compatible with the document format. Media type: " || $mediaType || ", Namespace: " || $namespace)
             else if (not($ref) and not($start) and not($end)) then
-                $document
+                $document/*
             else if ($namespace eq "mei") then
                 dts-document:MEISelect($document, $ref, $start, $end, $tree)                    
             else
