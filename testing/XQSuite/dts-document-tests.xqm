@@ -82,7 +82,7 @@ declare
 
 declare
     %test:args("<section xmlns='http://www.music-encoding.org/ns/mei' xml:id='selection'/>")
-    %test:assertError("dts-document:InvalidParametersError")
+    %test:assertError("errors:InvalidParametersError")
     function ddt:test-wrapMEISelection-rejects-unsupported-selection(
         $selection as element()
     ) as node()? {
@@ -128,7 +128,7 @@ declare
 };
 
 declare
-    %test:assertError("dts-document:NotFoundError")
+    %test:assertError("errors:NotFoundError")
     function ddt:test-MEISelect-errors-when-selection-not-found() as node()* {
         let $documentRoot :=
             <mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.0.0">
@@ -148,4 +148,32 @@ declare
     %test:args("application/xml", "unknown")      %test:assertFalse
     function ddt:test-isMediaTypeCompatible($mediaType as xs:string?, $namespace as xs:string) as xs:boolean {
         dts-document:isMediaTypeCompatible($mediaType, $namespace)
+};
+
+declare
+    (: Output test case placeholders:
+    %test:args("resource-id", (), (), (), (), ())
+    %test:assertEquals("<expected-output/>")
+
+    %test:args("resource-id", "ref-id", (), (), "musicStructure", "application/xml")
+    %test:assertEquals("<expected-output/>")
+    :)
+
+    (: Error test case placeholders:
+    %test:args("resource-id", "missing-ref", (), (), "musicStructure", "application/xml")
+    %test:assertError("errors:NotFoundError")
+
+    %test:args("resource-id", (), "missing-start", "missing-end", "musicStructure", "application/xml")
+    %test:assertError("errors:NotFoundError")
+    :)
+
+    function ddt:test-document(
+        $resource as xs:string,
+        $ref as xs:string?,
+        $start as xs:string?,
+        $end as xs:string?,
+        $tree as xs:string?,
+        $mediaType as xs:string?
+    ) as node()* { 
+        dts-document:document($resource, $ref, $start, $end, $tree, $mediaType) 
 };

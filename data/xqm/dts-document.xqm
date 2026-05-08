@@ -119,8 +119,6 @@ declare function dts-document:document(
 
         let $mediaTypeCompatible := dts-document:isMediaTypeCompatible($mediaType, $namespace)
 
-        (: TODO maybe do some checks that the ref, start and end make sense :)
-
 
         let $output := 
             if (not($mediaTypeCompatible)) then
