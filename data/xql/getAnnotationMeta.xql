@@ -100,7 +100,7 @@ return
                 for $t in $taxonomiesArray?*
                 return
                     <div class="property taxonomy-{$t('id')}">
-                        <div class="key">{(eutil:getLanguageString(edition:getLanguageFileURI($edition, $lang), 'view.window.AnnotationView_' || $t('label'), (), $lang), 'view.window.AnnotationView_' || $t('label'))[1]}</div>
+                        <div class="key">{(eutil:getLanguageString(edition:getLanguageFileURI($edition, $lang), $t('label'), (), $lang), $t('label'))[1]}</div>
                         <div class="value">{string-join($t('items')?*?name, ', ')}</div>
                     </div>
             }
