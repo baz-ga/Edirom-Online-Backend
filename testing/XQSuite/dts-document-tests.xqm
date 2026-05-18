@@ -151,10 +151,6 @@ declare
 };
 
 declare
-    (: Output test case placeholders:
-    %test:args("resource-id", (), "missing-start", "missing-end", "musicStructure", "application/xml")
-    %test:assertError("errors:NotFoundError")
-    :)
     (: Valid requests :)
     (: retrieve full mei :)
     %test:arg("resource", "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/mei-score.xml")
