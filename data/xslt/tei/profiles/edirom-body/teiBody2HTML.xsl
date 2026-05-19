@@ -915,7 +915,7 @@
 
     <xsl:template match="tei:*[@rend = 'underline' and @n = '2']" priority="6">
         
-        <xsl:variable name="default">
+        <xsl:variable name="default" as="node()+">
             <xsl:next-match/>
         </xsl:variable>
         <xsl:element name="{$default/node()/local-name()}">
