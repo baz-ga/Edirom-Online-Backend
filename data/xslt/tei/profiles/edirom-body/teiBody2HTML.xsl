@@ -925,7 +925,8 @@
             </xsl:for-each>
         </xsl:element>
     </xsl:template>
-<xsl:template match="tei:ref[starts-with(@target, '#footnote')]" priority="5">
+    
+    <xsl:template match="tei:ref[starts-with(@target, '#footnote')]" priority="5">
         <xsl:variable name="footnote_id" select="substring(./@target, 2)" as="xs:string"/>
         
         <xsl:choose>
