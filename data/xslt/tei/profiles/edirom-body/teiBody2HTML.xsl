@@ -913,17 +913,32 @@
         </span>
     </xsl:template>
 
-    <xsl:template match="tei:*[@rend = 'underline' and @n = '2']" priority="6">
+    <xd:doc scope="component">
+        <xd:desc>For elements with @rend underline and @n 1, 2, or 3 add a corresponding @class value. This is based on the WeGA encoding model for multiple underlines as described in https://weber-gesamtausgabe.de/de/Projekt/Editionsrichtlinien_Text.html and how it was applied in the Freischütz Digital data set.</xd:desc>
+    </xd:doc>
+    <xsl:template match="tei:*[@rend = 'underline' and matches(@n,'^[123]$')]" priority="6">
         
+        <!-- cache what TEI Stylesheets would output to post-process it below -->
         <xsl:variable name="default" as="node()+">
             <xsl:next-match/>
         </xsl:variable>
-        <xsl:element name="{$default/node()/local-name()}">
-            <xsl:attribute name="class" select="concat($default/node()/@class, ' n2')"/>
-            <xsl:for-each select="$default/node()/node() | $default/node()/@* except $default/node()/@class">
-                <xsl:copy-of select="."/>
-            </xsl:for-each>
-        </xsl:element>
+        
+        <!-- cache value of n as variable -->
+        <xsl:variable name="n" select="@n"/>
+        
+        <!-- cache what the TEI Stylesheets output for @rend to match against it below -->
+        <xsl:variable name="processRend" select="tei:processRend(@rend,'',.)"/>
+        
+        <!-- post-process TEI Stylesheets output to add 'n + digit' to @class -->
+        <xsl:for-each select="$default">
+            <xsl:copy>
+                <xsl:copy-of select="@* except @class"/>
+                <xsl:if test="contains(string-join(./@*), $processRend) and matches($n,'^[123]$')">
+                    <xsl:attribute name="class" select="string-join(($default/node()/@class, 'n' || $n), ' ')"/>
+                </xsl:if>
+                <xsl:copy-of select="./node()"/>
+            </xsl:copy>
+        </xsl:for-each>
     </xsl:template>
     
     <xsl:template match="tei:ref[starts-with(@target, '#footnote')]" priority="5">
