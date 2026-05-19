@@ -16,10 +16,10 @@
         },
         "paginationStructure": {
             "@type": "CitationTree",
-            "indentifier": "paginationStructure",
+            "identifier": "paginationStructure",
             "citeStructure" : [
                 {
-                    "citeType": "Page",
+                    "citeType": "Surface",
                     "citeStructure": [
                         {
                             "citeType": "Zone"
