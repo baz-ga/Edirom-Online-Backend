@@ -15,10 +15,7 @@ declare namespace exist="http://exist.sourceforge.net/NS/exist";
 import module namespace request="http://exist-db.org/xquery/request";
 import module namespace roaster="http://e-editiones.org/roaster";
 
-import module namespace auth="http://e-editiones.org/roaster/auth";
-import module namespace rutil="http://e-editiones.org/roaster/util";
 import module namespace errors="http://www.edirom.de/xquery/errors" at "../xqm/errors.xqm";
-import module namespace cookie="http://e-editiones.org/roaster/cookie";
 import module namespace dts-document="http://www.edirom.de/api/dts-document" at "../xqm/dts-document.xqm";
 
 (: FUNCTION DECLARATIONS =================================================== :)
