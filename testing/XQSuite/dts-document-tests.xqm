@@ -8,6 +8,30 @@ declare namespace dts="https://w3id.org/dts/api#";
 declare namespace mei="http://www.music-encoding.org/ns/mei";
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
+declare function ddt:citationTree(
+    $tree as xs:string?
+) as element(citeStructure)* {
+    <refsDecl xmlns:mei="http://www.music-encoding.org/ns/mei">
+        <citeStructure xml:id="musicStructure"
+                        unit="Movement"
+                        match="mei:mdiv"
+                        use="@xml:id">
+            <citeStructure unit="Measure"
+                            match="mei:measure"
+                            use="@xml:id"/>
+        </citeStructure>
+        <citeStructure xml:id="paginationStructure"
+                        unit="Surface"
+                        match="mei:surface"
+                        use="@xml:id">
+            <citeStructure unit="Zone"
+                            match="mei:zone"
+                            use="@xml:id"/>
+        </citeStructure>
+    </refsDecl>/citeStructure[
+        not($tree) or @xml:id = $tree
+    ]
+};
 
 declare
     %test:args(
@@ -103,7 +127,7 @@ declare
                     </body>
                 </music>
             </mei>
-        let $result := dts-document:MEISelect(document { $documentRoot }, "selection-2", (), (), "musicStructure")
+        let $result := dts-document:MEISelect(document { $documentRoot }, "selection-2", (), (), ddt:citationTree("musicStructure"))
         return string($result//dts:wrapper/mei:mdiv/@xml:id)
 };
 
@@ -121,7 +145,7 @@ declare
                     </body>
                 </music>
             </mei>
-        let $result := dts-document:MEISelect(document { $documentRoot }, (), "selection-1", "selection-3", "musicStructure")
+        let $result := dts-document:MEISelect(document { $documentRoot }, (), "selection-1", "selection-3", ddt:citationTree("musicStructure"))
         return
             for $mdiv in $result//dts:wrapper/mei:mdiv
             return string($mdiv/@xml:id)
@@ -135,7 +159,7 @@ declare
                 <meiHead/>
                 <music><body><mdiv xml:id="selection-1"/></body></music>
             </mei>
-        return dts-document:MEISelect(document { $documentRoot }, "missing", (), (), "musicStructure")
+        return dts-document:MEISelect(document { $documentRoot }, "missing", (), (), ddt:citationTree("musicStructure"))
 };
 
 declare
