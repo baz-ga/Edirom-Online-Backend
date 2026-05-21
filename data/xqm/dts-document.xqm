@@ -62,6 +62,8 @@ declare function dts-document:MEISelect(
                 return
                     if ($start eq $end) then
                         $startNode
+                    else if ($startNode and $endNode and not($startNode/parent::* is $endNode/parent::*)) then
+                        error($errors:INVALID_PARAMETERS, "The start and end citable units must have the same parent.")
                     else if ($startNode and $endNode and ($startNode << $endNode)) then
                         (
                             $startNode,
