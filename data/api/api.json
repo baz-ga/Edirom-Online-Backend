@@ -92,9 +92,13 @@
 								"type": "string"
 							},
 							"examples": {
-								"Klarinettenquintett": {
-									"summary": "Klarinettenquintett",
+								"Klarinettenquintett MEI": {
+									"summary": "Klarinettenquintett MEI",
 									"value": "xmldb:exist:///db/apps/weber-klarinettenquintett-eol-emeritus/sources/source-4-MEI.xml"
+								},
+								"Klarinettenquintett source 1": {
+									"summary": "Klarinettenquintett source 1",
+									"value": "xmldb:exist:///db/apps/weber-klarinettenquintett-eol-emeritus/sources/source-1.xml"
 								}
 							}
 						},
@@ -126,6 +130,18 @@
 								"Rondo": {
 									"summary": "Rondo",
 									"value": "xf1c9b711-1ab7-47c5-afea-e0551799da6c"
+								},
+								"Measure 2": {
+									"summary": "Measure 2",
+									"value": "xb3589e15-7672-4a38-a0d5-406cd7de9a1f"
+								},
+								"Surface 3": {
+									"summary": "Surface 3",
+									"value": "facsimile-2001003"
+								},
+								"Zone": {
+									"summary": "Zone",
+									"value": "zone_bar-20037"
 								}
 							}
 						},
@@ -157,6 +173,18 @@
 								"Rondo": {
 									"summary": "Rondo",
 									"value": "xf1c9b711-1ab7-47c5-afea-e0551799da6c"
+								},
+								"Measure 2 range start": {
+									"summary": "Measure 2 range start",
+									"value": "xb3589e15-7672-4a38-a0d5-406cd7de9a1f"
+								},
+								"Surface 3 range start": {
+									"summary": "Surface 3 range start",
+									"value": "facsimile-2001003"
+								},
+								"Zone range start": {
+									"summary": "Zone range start",
+									"value": "zone_bar-20037"
 								}
 							}
 						},
@@ -188,6 +216,18 @@
 								"Rondo": {
 									"summary": "Rondo",
 									"value": "xf1c9b711-1ab7-47c5-afea-e0551799da6c"
+								},
+								"Measure 6 range end": {
+									"summary": "Measure 6 range end",
+									"value": "x97e20158-6a2a-4ebc-9061-fccc379d2b58"
+								},
+								"Surface 9 range end": {
+									"summary": "Surface 9 range end",
+									"value": "facsimile-2001009"
+								},
+								"Zone range end": {
+									"summary": "Zone range end",
+									"value": "zone_bar-20047"
 								}
 							}
 						},
