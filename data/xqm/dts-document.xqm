@@ -48,9 +48,25 @@ declare function dts-document:wrapMEISelection(
 
 declare function dts-document:isInCitationTree(
     $selection as node()*,
-    $tree as xs:string?
+    $citationTree as element(citeStructure)*
 ) as xs:boolean {
-    true()
+    some $citeStructure in ($citationTree, $citationTree//citeStructure)
+        satisfies dts-document:matchesCitationStructure($selection, $citeStructure)
+};
+
+declare function dts-document:matchesCitationStructure(
+    $selection as node()*,
+    $citeStructure as element(citeStructure)
+) as xs:boolean {
+    let $match := normalize-space($citeStructure/@match)
+    let $matchName :=
+        if (not($match)) then
+            ()
+        else
+            resolve-QName($match, $citeStructure)
+    return
+        exists($matchName)
+        and (every $node in $selection satisfies node-name($node) eq $matchName)
 };
 
 declare function dts-document:MEISelect(
@@ -58,7 +74,7 @@ declare function dts-document:MEISelect(
     $ref as xs:string?,
     $start as xs:string?,
     $end as xs:string?,
-    $tree as xs:string?
+    $citationTree as element(citeStructure)*
 ) as node()* {
     let $selection :=
         if ($ref) then
@@ -84,8 +100,10 @@ declare function dts-document:MEISelect(
         else
             ()
     return
-        if ($selection and dts-document:isInCitationTree($selection, $tree)) then
+        if ($selection and dts-document:isInCitationTree($selection, $citationTree)) then
             dts-document:wrapMEISelection($selection, $document)
+        else if ($selection) then
+            error($errors:INVALID_PARAMETERS, "The selected citable units are not part of the citation tree specified for this document." || "Citation tree: " || string-join($citationTree/@xml:id, ", ") || ". Selected element: " || node-name($selection[1]) || ", Selected element @xml:id: " || $selection[1]/@xml:id)
         else
             error($errors:NOT_FOUND, "The specified citable units did not match any element in the document.")
 };
@@ -120,6 +138,9 @@ declare function dts-document:document(
         error($errors:INVALID_PARAMETERS, "Both 'start' and 'end' parameters must be provided together.")
     else
         let $document := doc($resource)/root()
+        let $citationTree := doc($eutil:app-root || '/data/trees/citationTreesMEI.xml')/refsDecl/citeStructure[
+            not($tree) or @xml:id = $tree
+        ]
         let $namespace := 
             if ($document) then
                 eutil:getNamespace($document/*)
@@ -135,12 +156,12 @@ declare function dts-document:document(
             else if (not($ref) and not($start) and not($end)) then
                 $document/*
             else if ($namespace eq "mei") then
-                dts-document:MEISelect($document, $ref, $start, $end, $tree)                    
+                dts-document:MEISelect($document, $ref, $start, $end, $citationTree)                    
             else
                 error($errors:UNSUPPORTED_DOCUMENT_FORMAT, "The format of the requested document is not supported. Namespace: " || $namespace )
         
-        let $base := concat(replace(system:get-module-load-path(), 'embedded-eXist-server', ''), '/../xslt/')
-        let $output := transform:transform($output, concat($base, 'edirom_prepareAnnotsForRendering.xsl'), <parameters/>)
+        let $xsltBase := concat(replace(system:get-module-load-path(), 'embedded-eXist-server', ''), '/../xslt/')
+        let $output := transform:transform($output, concat($xsltBase, 'edirom_prepareAnnotsForRendering.xsl'), <parameters/>)
             
         return
             document { $output }

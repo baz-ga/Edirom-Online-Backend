@@ -32,6 +32,7 @@
                 <include name="data/api/"/>
                 <include name="data/locale/"/>
                 <include name="data/prefs/"/>
+                <include name="data/trees/"/>
                 <include name="data/xql/"/>
                 <include name="data/xqm/"/>
                 <include name="data/xslt/*"/>
