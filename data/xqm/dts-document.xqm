@@ -46,6 +46,13 @@ declare function dts-document:wrapMEISelection(
         error($errors:INVALID_PARAMETERS, "Selection not implemented. Selected element: " || node-name($selection[1]))
 };
 
+declare function dts-document:isInCitationTree(
+    $selection as node()*,
+    $tree as xs:string?
+) as xs:boolean {
+    true()
+};
+
 declare function dts-document:MEISelect(
     $document as node(),
     $ref as xs:string?,
@@ -54,13 +61,13 @@ declare function dts-document:MEISelect(
     $tree as xs:string?
 ) as node()* {
     let $selection :=
-        if ($tree eq "musicStructure" and $ref) then
+        if ($ref) then
             $document/id($ref)
-        else if ($tree eq "musicStructure" and $start and $end) then
+        else if ($start and $end) then
             let $startNode := $document/id($start)
             let $endNode := $document/id($end)
                 return
-                    if ($start eq $end) then
+                    if ($start eq $end and $startNode) then
                         $startNode
                     else if ($startNode and $endNode and not($startNode/parent::* is $endNode/parent::*)) then
                         error($errors:INVALID_PARAMETERS, "The start and end citable units must have the same parent.")
@@ -73,11 +80,11 @@ declare function dts-document:MEISelect(
                             $endNode
                         )
                     else
-                        ()
+                        error($errors:INVALID_PARAMETERS, "Invalid start and end citable units. Start: " || $start || ", End: " || $end)
         else
             ()
     return
-        if ($selection) then
+        if ($selection and dts-document:isInCitationTree($selection, $tree)) then
             dts-document:wrapMEISelection($selection, $document)
         else
             error($errors:NOT_FOUND, "The specified citable units did not match any element in the document.")
