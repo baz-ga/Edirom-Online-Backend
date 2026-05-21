@@ -34,12 +34,26 @@ declare function dts-document:wrapMEISelection(
             meiversion="{$document//mei:mei/@meiversion}">
             {$document//mei:meiHead}
             <music>
-                <facsimile/>
+                <facsimile/> (: TODO find matching elements :)
                 <body>
                     <dts:wrapper xmlns:dts="https://w3id.org/dts/api#">
                         {$selection}
                     </dts:wrapper>
                 </body>
+            </music>
+        </mei>
+    else if (node-name($selection[1]) eq QName("http://www.music-encoding.org/ns/mei", "surface")) then
+        <mei xmlns="http://www.music-encoding.org/ns/mei"
+            xmlns:xlink="http://www.w3.org/1999/xlink"
+            meiversion="{$document//mei:mei/@meiversion}">
+            {$document//mei:meiHead}
+            <music>
+                <facsimile>
+                    <dts:wrapper xmlns:dts="https://w3id.org/dts/api#">
+                        {$selection}
+                    </dts:wrapper>
+                </facsimile>
+                <body/> (: TODO find matching elements :)
             </music>
         </mei>
     else
