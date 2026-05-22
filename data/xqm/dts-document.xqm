@@ -43,6 +43,10 @@ declare variable $dts-document:preserveIfPrecedingSiblindsMEIElements as xs:QNam
     QName("http://www.music-encoding.org/ns/mei", "graphic")
 );
 
+declare variable $dts-document:referenceAttributes as xs:QName* := (
+    QName("", "facs")
+);
+
 (: FUNCTION DECLARATIONS =================================================== :)
 
 declare function dts-document:wrapMEISelection(
@@ -51,10 +55,9 @@ declare function dts-document:wrapMEISelection(
 ) as node()? {
     let $alwaysPreserved := $document//*[node-name(.) = $dts-document:alwaysPreserveMEIElements]
     let $baseFullCopyNodes := ($selection, $alwaysPreserved)
-    let $baseKeptNodes := ($baseFullCopyNodes, $baseFullCopyNodes/ancestor::*)
-    let $preserveIfPrecedingSiblings := dts-document:preserveIfPrecedingSiblingNodes($baseKeptNodes)
-    let $fullCopyNodes := ($baseFullCopyNodes, $preserveIfPrecedingSiblings)
-    (: let $fullCopyNodes := dts-document:referenceClosure($document, ($selection, $alwaysPreserved)) :)
+    let $referencedNodes := dts-document:referenceClosure($document, $baseFullCopyNodes)
+    let $preserveIfPrecedingSiblings := dts-document:preserveIfPrecedingSiblingNodes(($referencedNodes, $referencedNodes/ancestor::*))
+    let $fullCopyNodes := dts-document:referenceClosure($document, ($referencedNodes, $preserveIfPrecedingSiblings))
     let $keptNodes := ($fullCopyNodes, $fullCopyNodes/ancestor::*)
     return
         dts-document:copyMEISelection($document/*, $selection, $fullCopyNodes, $keptNodes)
@@ -66,29 +69,25 @@ declare function dts-document:preserveIfPrecedingSiblingNodes(
     $keptNodes/preceding-sibling::*[node-name(.) = $dts-document:preserveIfPrecedingSiblindsMEIElements]
 };
 
-(: TODO: redefine the closure :)
-
-(:
 declare function dts-document:referenceClosure(
     $document as node(),
     $nodes as element()*
 ) as element()* {
     let $referencedIds := dts-document:localReferenceIds($nodes)
     let $referencedNodes := $document/id($referencedIds)
-    let $reverseReferringNodes := dts-document:elementsReferencingIds($document, ($nodes/@xml:id, $nodes//@xml:id))
-    let $newNodes := ($referencedNodes, $reverseReferringNodes) except $nodes
+    let $newNodes := $referencedNodes except $nodes
     return
         if (empty($newNodes)) then
             $nodes
         else
-            dts-document:referenceClosure($document, ($nodes, $referencedNodes, $reverseReferringNodes))
+            dts-document:referenceClosure($document, ($nodes, $referencedNodes))
 };
 
 declare function dts-document:localReferenceIds(
     $nodes as element()*
 ) as xs:string* {
     distinct-values(
-        for $attribute in ($nodes/@*, $nodes//@*)
+        for $attribute in ($nodes/@*, $nodes//@*)[node-name(.) = $dts-document:referenceAttributes]
         return dts-document:localReferenceIdsFromAttributes($attribute)
     )
 };
@@ -103,17 +102,6 @@ declare function dts-document:localReferenceIdsFromAttributes(
         return substring($token, 2)
     )
 };
-
-declare function dts-document:elementsReferencingIds(
-    $document as node(),
-    $ids as xs:string*
-) as element()* {
-    if (empty($ids)) then
-        ()
-    else
-        $document//*[some $id in dts-document:localReferenceIdsFromAttributes(@*) satisfies $id = $ids]
-};
-:)
 
 declare function dts-document:copyMEISelection(
     $node as node(),

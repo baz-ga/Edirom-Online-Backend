@@ -146,7 +146,7 @@ declare
 
 declare
     %test:assertTrue
-    function ddt:test-wrapMEISelection-preserves-surface-ancestor-for-zone() as xs:boolean {
+    function ddt:test-wrapMEISelection-preserves-surface-ancestor-and-preceding-graphic-for-zone() as xs:boolean {
         let $document :=
             document {
                 <mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.0.0">
@@ -165,7 +165,7 @@ declare
         let $result := dts-document:wrapMEISelection($document/id("selection"), $document)
         return
             exists($result/mei:music/mei:facsimile/mei:surface[@xml:id = "surface"]/dts:wrapper/mei:zone[@xml:id = "selection"])
-            and empty($result//mei:graphic)
+            and exists($result/mei:music/mei:facsimile/mei:surface[@xml:id = "surface"]/mei:graphic[@xml:id = "graphic"])
             and empty($result//mei:zone[@xml:id = "skipped"])
 };
 
@@ -228,7 +228,6 @@ declare
             and empty($result//mei:scoreDef[@xml:id = "following-scoreDef"])
 };
 
-(:
 declare
     %test:assertTrue
     function ddt:test-wrapMEISelection-includes-forward-facs-reference() as xs:boolean {
@@ -261,12 +260,10 @@ declare
             and exists($result/mei:music/mei:facsimile/mei:surface[@xml:id = "surface"]/mei:zone[@xml:id = "referenced-zone"])
             and empty($result//mei:zone[@xml:id = "skipped-zone"])
 };
-:)
 
-(:
 declare
     %test:assertTrue
-    function ddt:test-wrapMEISelection-includes-reverse-facs-reference() as xs:boolean {
+    function ddt:test-wrapMEISelection-preserves-configured-preceding-sibling-for-referenced-zone() as xs:boolean {
         let $document :=
             document {
                 <mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.0.0">
@@ -274,15 +271,16 @@ declare
                     <music>
                         <facsimile>
                             <surface xml:id="surface">
-                                <zone xml:id="selection"/>
+                                <graphic xml:id="graphic"/>
+                                <zone xml:id="referenced-zone"/>
+                                <zone xml:id="skipped-zone"/>
                             </surface>
                         </facsimile>
                         <body>
                             <mdiv>
                                 <score>
                                     <section>
-                                        <measure facs="#selection" xml:id="referencing-measure"/>
-                                        <measure xml:id="skipped-measure"/>
+                                        <measure facs="#referenced-zone" xml:id="selection"/>
                                     </section>
                                 </score>
                             </mdiv>
@@ -292,11 +290,41 @@ declare
             }
         let $result := dts-document:wrapMEISelection($document/id("selection"), $document)
         return
-            exists($result//dts:wrapper/mei:zone[@xml:id = "selection"])
-            and exists($result/mei:music/mei:body/mei:mdiv/mei:score/mei:section/mei:measure[@xml:id = "referencing-measure"])
-            and empty($result//mei:measure[@xml:id = "skipped-measure"])
+            exists($result//dts:wrapper/mei:measure[@xml:id = "selection"])
+            and exists($result/mei:music/mei:facsimile/mei:surface/mei:graphic[@xml:id = "graphic"])
+            and empty($result//mei:zone[@xml:id = "skipped-zone"])
 };
-:)
+
+declare
+    %test:assertTrue
+    function ddt:test-wrapMEISelection-ignores-non-facs-reference-attributes() as xs:boolean {
+        let $document :=
+            document {
+                <mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.0.0">
+                    <meiHead/>
+                    <music>
+                        <facsimile>
+                            <surface xml:id="surface">
+                                <zone xml:id="target-zone"/>
+                            </surface>
+                        </facsimile>
+                        <body>
+                            <mdiv>
+                                <score>
+                                    <section>
+                                        <measure corresp="#target-zone" xml:id="selection"/>
+                                    </section>
+                                </score>
+                            </mdiv>
+                        </body>
+                    </music>
+                </mei>
+            }
+        let $result := dts-document:wrapMEISelection($document/id("selection"), $document)
+        return
+            exists($result//dts:wrapper/mei:measure[@xml:id = "selection"])
+            and empty($result//mei:zone[@xml:id = "target-zone"])
+};
 
 declare
     %test:assertEquals("selection-2")
