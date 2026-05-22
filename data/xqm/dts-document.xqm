@@ -28,6 +28,20 @@ declare variable $dts-document:alwaysPreserveMEIElements as xs:QName* := (
     QName("http://www.music-encoding.org/ns/mei", "meiHead")
 );
 
+declare variable $dts-document:preserveIfPrecedingSiblindsMEIElements as xs:QName* := (
+    QName("http://www.music-encoding.org/ns/mei", "scoreDef"),
+    QName("http://www.music-encoding.org/ns/mei", "staffGrp"),
+    QName("http://www.music-encoding.org/ns/mei", "staffDef"),
+    QName("http://www.music-encoding.org/ns/mei", "layerDef"),
+    QName("http://www.music-encoding.org/ns/mei", "clef"),
+    QName("http://www.music-encoding.org/ns/mei", "clefGrp"),
+    QName("http://www.music-encoding.org/ns/mei", "keySig"),
+    QName("http://www.music-encoding.org/ns/mei", "keyAccid"),
+    QName("http://www.music-encoding.org/ns/mei", "label"),
+    QName("http://www.music-encoding.org/ns/mei", "meterSig"),
+    QName("http://www.music-encoding.org/ns/mei", "meterSigGrp")
+);
+
 (: FUNCTION DECLARATIONS =================================================== :)
 
 declare function dts-document:wrapMEISelection(
