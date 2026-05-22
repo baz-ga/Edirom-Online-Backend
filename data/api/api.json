@@ -142,6 +142,14 @@
 								"Zone": {
 									"summary": "Zone",
 									"value": "zone_bar-20037"
+								},
+								"Measure source 1 - 1": {
+									"summary": "Measure source 1 - 1",
+									"value": "bar-2001"
+								},
+								"Measure source 1 - 2": {
+									"summary": "Measure source 1 - 2",
+									"value": "bar-2002"
 								}
 							}
 						},
@@ -185,6 +193,14 @@
 								"Zone range start": {
 									"summary": "Zone range start",
 									"value": "zone_bar-20037"
+								},
+								"Measure source 1 - 1": {
+									"summary": "Measure source 1 - 1",
+									"value": "bar-2001"
+								},
+								"Measure source 1 - 2": {
+									"summary": "Measure source 1 - 2",
+									"value": "bar-2002"
 								}
 							}
 						},
@@ -228,6 +244,14 @@
 								"Zone range end": {
 									"summary": "Zone range end",
 									"value": "zone_bar-20047"
+								},
+								"Measure source 1 - 4": {
+									"summary": "Measure source 1 - 4",
+									"value": "bar-2004"
+								},
+								"Measure source 1 - 20": {
+									"summary": "Measure source 1 - 20",
+									"value": "bar-20020"
 								}
 							}
 						},
