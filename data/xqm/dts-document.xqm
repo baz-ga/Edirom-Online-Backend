@@ -39,7 +39,8 @@ declare variable $dts-document:preserveIfPrecedingSiblindsMEIElements as xs:QNam
     QName("http://www.music-encoding.org/ns/mei", "keyAccid"),
     QName("http://www.music-encoding.org/ns/mei", "label"),
     QName("http://www.music-encoding.org/ns/mei", "meterSig"),
-    QName("http://www.music-encoding.org/ns/mei", "meterSigGrp")
+    QName("http://www.music-encoding.org/ns/mei", "meterSigGrp"),
+    QName("http://www.music-encoding.org/ns/mei", "graphic")
 );
 
 (: FUNCTION DECLARATIONS =================================================== :)
@@ -49,15 +50,23 @@ declare function dts-document:wrapMEISelection(
     $document as node()
 ) as node()? {
     let $alwaysPreserved := $document//*[node-name(.) = $dts-document:alwaysPreserveMEIElements]
-    let $fullCopyNodes := ($selection, $alwaysPreserved)
+    let $baseFullCopyNodes := ($selection, $alwaysPreserved)
+    let $baseKeptNodes := ($baseFullCopyNodes, $baseFullCopyNodes/ancestor::*)
+    let $preserveIfPrecedingSiblings := dts-document:preserveIfPrecedingSiblingNodes($baseKeptNodes)
+    let $fullCopyNodes := ($baseFullCopyNodes, $preserveIfPrecedingSiblings)
     (: let $fullCopyNodes := dts-document:referenceClosure($document, ($selection, $alwaysPreserved)) :)
     let $keptNodes := ($fullCopyNodes, $fullCopyNodes/ancestor::*)
     return
         dts-document:copyMEISelection($document/*, $selection, $fullCopyNodes, $keptNodes)
 };
 
+declare function dts-document:preserveIfPrecedingSiblingNodes(
+    $keptNodes as element()*
+) as element()* {
+    $keptNodes/preceding-sibling::*[node-name(.) = $dts-document:preserveIfPrecedingSiblindsMEIElements]
+};
+
 (: TODO: redefine the closure :)
-(: TODO: enlarge the fullCopyNodes to take into account scoreDefs and similar things when they affect the selection :)
 
 (:
 declare function dts-document:referenceClosure(

@@ -196,6 +196,38 @@ declare
             and empty($result//mei:measure[@xml:id = "skipped"])
 };
 
+declare
+    %test:assertTrue
+    function ddt:test-wrapMEISelection-preserves-configured-preceding-sibling() as xs:boolean {
+        let $document :=
+            document {
+                <mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.0.0">
+                    <meiHead/>
+                    <music>
+                        <body>
+                            <mdiv>
+                                <score>
+                                    <scoreDef xml:id="preceding-scoreDef">
+                                        <staffGrp>
+                                            <staffDef n="1"/>
+                                        </staffGrp>
+                                    </scoreDef>
+                                    <section>
+                                        <measure xml:id="selection"/>
+                                    </section>
+                                    <scoreDef xml:id="following-scoreDef"/>
+                                </score>
+                            </mdiv>
+                        </body>
+                    </music>
+                </mei>
+            }
+        let $result := dts-document:wrapMEISelection($document/id("selection"), $document)
+        return
+            exists($result//mei:scoreDef[@xml:id = "preceding-scoreDef"]/mei:staffGrp/mei:staffDef)
+            and empty($result//mei:scoreDef[@xml:id = "following-scoreDef"])
+};
+
 (:
 declare
     %test:assertTrue
