@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<project name="EdiromOnlineBackend" default="xar">
+<project name="EdiromOnlineBackend" default="xar" xmlns:if="ant:if" xmlns:unless="ant:unless">
 
     <import file="${basedir}/testing/ant-tests.xml"/>
 
@@ -12,6 +12,12 @@
     <property name="tei.dir" value="build-tei"/>
     
     <tstamp/>
+    
+    <!-- fails if not found… -->
+    <!--<condition property="tei-available">
+        <available file="tei-xsl-7.58.0.zip" filepath="${tei.dir}" />
+    </condition>-->
+    
 
     <target name="clean">
         <delete dir="${build.dir}"/>
@@ -21,8 +27,8 @@
     <!-- Download TEI Zip file and extract it to ${tei.dir} -->
     <target name="download-tei">
         <mkdir dir="${tei.dir}"/>
-        <get src="https://github.com/TEIC/Stylesheets/releases/download/v7.58.0/tei-xsl-7.58.0.zip" dest="${tei.dir}/tei-xsl-7.58.0.zip"/>
-        <unzip src="${tei.dir}/tei-xsl-7.58.0.zip" dest="${tei.dir}"/>
+        <get src="https://github.com/TEIC/Stylesheets/releases/download/v7.58.0/tei-xsl-7.58.0.zip" dest="${tei.dir}/tei-xsl-7.58.0.zip" unless:true="${tei-available}" />
+        <unzip src="${tei.dir}/tei-xsl-7.58.0.zip" dest="${tei.dir}" overwrite="true"/>
     </target>
 
     <target name="build-plus">
