@@ -11,6 +11,8 @@ xquery version "3.1";
     @author <a href="mailto:bohl@edirom.de">Benjamin W. Bohl</a>
 :)
 
+(: TODO move a way from returning HTML for Edirom-API 2.0 :)
+
 (: IMPORTS ================================================================= :)
 
 import module namespace annotation = "http://www.edirom.de/xquery/annotation" at "../xqm/annotation.xqm";
