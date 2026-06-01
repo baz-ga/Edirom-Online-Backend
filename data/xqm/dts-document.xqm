@@ -4,7 +4,7 @@ xquery version "3.1";
  :)
 
  (:~
- : This module provides library functions for handling errors
+ : This module implements the document endpoint for the Distributed Text Services API.
  :
  : @author Francesco Maccarini
  :)
