@@ -156,6 +156,12 @@ declare function dts-document:isInCitationTree(
         satisfies dts-document:matchesCitationStructure($selection, $citeStructure)
 };
 
+declare function dts-document:isAlwaysPreservedMEISelection(
+    $selection as element()*
+) as xs:boolean {
+    every $node in $selection satisfies node-name($node) = $dts-document:alwaysPreserveMEIElements
+};
+
 declare function dts-document:matchesCitationStructure(
     $selection as element()*,
     $citeStructure as element(citeStructure)
@@ -180,7 +186,12 @@ declare function dts-document:MEISelect(
 ) as node()* {
     let $selection :=
         if ($ref) then
-            $document/id($ref)
+            let $idSelection := $document/id($ref)
+            return
+                if ($idSelection) then
+                    $idSelection
+                else
+                    $document//*[local-name() = $ref]
         else if ($start and $end) then
             let $startNode := $document/id($start)
             let $endNode := $document/id($end)
@@ -202,7 +213,13 @@ declare function dts-document:MEISelect(
         else
             ()
     return
-        if ($selection and dts-document:isInCitationTree($selection, $citationTree)) then
+        if (
+            $selection
+            and (
+                dts-document:isInCitationTree($selection, $citationTree)
+                or dts-document:isAlwaysPreservedMEISelection($selection)
+            )
+        ) then
             dts-document:wrapMEISelection($selection, $document)
         else if ($selection) then
             error($errors:INVALID_PARAMETERS, "The selected citable units are not part of the citation tree specified for this document." || "Citation tree: " || string-join($citationTree/@xml:id, ", ") || ". Selected element: " || node-name($selection[1]) || ", Selected element @xml:id: " || $selection[1]/@xml:id)

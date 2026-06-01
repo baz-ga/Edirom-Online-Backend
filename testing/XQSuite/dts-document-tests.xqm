@@ -533,6 +533,20 @@ declare
     %test:arg("tree")
     %test:arg("mediaType", "application/xml")
     %test:assertError("errors:InvalidParametersError")
+    (: ask for an mei element that is not in the tree and not in the always-included meiHead :)
+    %test:arg("resource", "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/mei-score.xml")
+    %test:arg("ref", "body")
+    %test:arg("start") %test:arg("end")
+    %test:arg("tree", "musicStructure")
+    %test:arg("mediaType", "application/xml")
+    %test:assertError("errors:InvalidParametersError")
+    (: ask for a tei element that is not in the tree and not in the always-included teiHead :)
+    %test:arg("resource", "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/tei-document.xml")
+    %test:arg("ref", "text")
+    %test:arg("start") %test:arg("end")
+    %test:arg("tree")
+    %test:arg("mediaType", "application/xml")
+    %test:assertError("errors:InvalidParametersError")
     function ddt:test-document(
         $resource as xs:string,
         $ref as xs:string?,

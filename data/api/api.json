@@ -150,6 +150,10 @@
 								"Measure source 1 - 2": {
 									"summary": "Measure source 1 - 2",
 									"value": "bar-2002"
+								},
+								"meiHead": {
+									"summary": "meiHead",
+									"value": "meiHead"
 								}
 							}
 						},
