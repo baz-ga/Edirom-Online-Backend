@@ -99,6 +99,10 @@
 								"Klarinettenquintett source 1": {
 									"summary": "Klarinettenquintett source 1",
 									"value": "xmldb:exist:///db/apps/weber-klarinettenquintett-eol-emeritus/sources/source-1.xml"
+								},
+								"Klarinettenquintett text 1": {
+									"summary": "Klarinettenquintett text 1",
+									"value": "xmldb:exist:///db/apps/weber-klarinettenquintett-eol-emeritus/texts/text-1.xml"
 								}
 							}
 						},
@@ -154,6 +158,10 @@
 								"meiHead": {
 									"summary": "meiHead",
 									"value": "meiHead"
+								},
+								"teiHeader": {
+									"summary": "teiHeader",
+									"value": "teiHeader"
 								}
 							}
 						},
@@ -295,9 +303,10 @@
 								"enum": [
 									"text/html",
 									"application/mei+xml",
-									"application/tei+xml"
+									"application/tei+xml",
+									"application/xml"
 								],
-								"default": "application/mei+xml"
+								"default": "application/xml"
 							},
 							"examples": {
 								"mei": {

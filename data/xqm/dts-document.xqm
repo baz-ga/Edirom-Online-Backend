@@ -28,6 +28,10 @@ declare variable $dts-document:alwaysPreserveMEIElements as xs:QName* := (
     QName("http://www.music-encoding.org/ns/mei", "meiHead")
 );
 
+declare variable $dts-document:alwaysPreserveTEIElements as xs:QName* := (
+    QName("http://www.tei-c.org/ns/1.0", "teiHeader")
+);
+
 declare variable $dts-document:preserveIfPrecedingSiblindsMEIElements as xs:QName* := (
     QName("http://www.music-encoding.org/ns/mei", "scoreDef"),
     QName("http://www.music-encoding.org/ns/mei", "staffGrp"),
@@ -49,18 +53,18 @@ declare variable $dts-document:referenceAttributes as xs:QName* := (
 
 (: FUNCTION DECLARATIONS =================================================== :)
 
-declare function dts-document:wrapMEISelection(
+declare function dts-document:wrapSelection(
     $selection as element()*,
     $document as node()
 ) as node()? {
-    let $alwaysPreserved := $document//*[node-name(.) = $dts-document:alwaysPreserveMEIElements]
+    let $alwaysPreserved := $document//*[node-name(.) = $dts-document:alwaysPreserveMEIElements or node-name(.) = $dts-document:alwaysPreserveTEIElements]
     let $baseFullCopyNodes := ($selection, $alwaysPreserved)
     let $referencedNodes := dts-document:referenceClosure($document, $baseFullCopyNodes)
     let $preserveIfPrecedingSiblings := dts-document:preserveIfPrecedingSiblingNodes(($referencedNodes, $referencedNodes/ancestor::*))
     let $fullCopyNodes := dts-document:referenceClosure($document, ($referencedNodes, $preserveIfPrecedingSiblings))
     let $keptNodes := ($fullCopyNodes, $fullCopyNodes/ancestor::*)
     return
-        dts-document:copyMEISelection($document/*, $selection, $fullCopyNodes, $keptNodes)
+        dts-document:copySelection($document/*, $selection, $fullCopyNodes, $keptNodes)
 };
 
 declare function dts-document:preserveIfPrecedingSiblingNodes(
@@ -103,7 +107,7 @@ declare function dts-document:localReferenceIdsFromAttributes(
     )
 };
 
-declare function dts-document:copyMEISelection(
+declare function dts-document:copySelection(
     $node as node(),
     $selection as element()*,
     $fullCopyNodes as element()*,
@@ -140,12 +144,12 @@ declare function dts-document:copySelectedChildren(
         if ($isFirstSelectedChild) then
             <dts:wrapper xmlns:dts="https://w3id.org/dts/api#">{
                 for $selectedChild in $node/*[. intersect $selection]
-                return dts-document:copyMEISelection($selectedChild, $selection, $fullCopyNodes, $keptNodes)
+                return dts-document:copySelection($selectedChild, $selection, $fullCopyNodes, $keptNodes)
             }</dts:wrapper>
         else if (exists($selectedChildren)) then
             ()
         else
-            dts-document:copyMEISelection($child, $selection, $fullCopyNodes, $keptNodes)
+            dts-document:copySelection($child, $selection, $fullCopyNodes, $keptNodes)
 };
 
 declare function dts-document:isInCitationTree(
@@ -156,10 +160,10 @@ declare function dts-document:isInCitationTree(
         satisfies dts-document:matchesCitationStructure($selection, $citeStructure)
 };
 
-declare function dts-document:isAlwaysPreservedMEISelection(
+declare function dts-document:isAlwaysPreservedSelection(
     $selection as element()*
 ) as xs:boolean {
-    every $node in $selection satisfies node-name($node) = $dts-document:alwaysPreserveMEIElements
+    every $node in $selection satisfies node-name($node) = $dts-document:alwaysPreserveMEIElements or node-name($node) = $dts-document:alwaysPreserveTEIElements
 };
 
 declare function dts-document:matchesCitationStructure(
@@ -177,7 +181,7 @@ declare function dts-document:matchesCitationStructure(
         and (every $node in $selection satisfies node-name($node) eq $matchName)
 };
 
-declare function dts-document:MEISelect(
+declare function dts-document:selectElementOrRange(
     $document as node(),
     $ref as xs:string?,
     $start as xs:string?,
@@ -217,10 +221,10 @@ declare function dts-document:MEISelect(
             $selection
             and (
                 dts-document:isInCitationTree($selection, $citationTree)
-                or dts-document:isAlwaysPreservedMEISelection($selection)
+                or dts-document:isAlwaysPreservedSelection($selection)
             )
         ) then
-            dts-document:wrapMEISelection($selection, $document)
+            dts-document:wrapSelection($selection, $document)
         else if ($selection) then
             error($errors:INVALID_PARAMETERS, "The selected citable units are not part of the citation tree specified for this document." || "Citation tree: " || string-join($citationTree/@xml:id, ", ") || ". Selected element: " || node-name($selection[1]) || ", Selected element @xml:id: " || $selection[1]/@xml:id)
         else
@@ -257,15 +261,14 @@ declare function dts-document:document(
         error($errors:INVALID_PARAMETERS, "Both 'start' and 'end' parameters must be provided together.")
     else
         let $document := doc($resource)/root()
-        let $citationTree := doc($eutil:app-root || '/data/trees/citationTreesMEI.xml')/refsDecl/citeStructure[
-            not($tree) or @xml:id = $tree
-        ]
         let $namespace := 
             if ($document) then
                 eutil:getNamespace($document/*)
             else
                 error($errors:NOT_FOUND, "The requested resource was not found.")
-
+        let $citationTree := doc($eutil:app-root || '/data/trees/citationTrees' || upper-case($namespace) || '.xml')/refsDecl/citeStructure[
+            not($tree) or @xml:id = $tree
+        ]
         let $mediaTypeCompatible := dts-document:isMediaTypeCompatible($mediaType, $namespace)
 
 
@@ -274,11 +277,12 @@ declare function dts-document:document(
                 error($errors:UNSUPPORTED_MEDIA_TYPE, "The requested media type is not compatible with the document format. Media type: " || $mediaType || ", Namespace: " || $namespace)
             else if (not($ref) and not($start) and not($end)) then
                 $document/*
-            else if ($namespace eq "mei") then
-                dts-document:MEISelect($document, $ref, $start, $end, $citationTree)                    
+            else if ($namespace eq "mei" or $namespace eq "tei") then
+                dts-document:selectElementOrRange($document, $ref, $start, $end, $citationTree)                    
             else
                 error($errors:UNSUPPORTED_DOCUMENT_FORMAT, "The format of the requested document is not supported. Namespace: " || $namespace )
         
+        (: TODO: transformations should be applied here only when edirom output is requested :)
         let $xsltBase := concat(replace(system:get-module-load-path(), 'embedded-eXist-server', ''), '/../xslt/')
         let $output := transform:transform($output, concat($xsltBase, 'edirom_prepareAnnotsForRendering.xsl'), <parameters/>)
             
