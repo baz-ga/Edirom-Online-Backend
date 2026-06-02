@@ -51,6 +51,11 @@ declare variable $dts-document:referenceAttributes as xs:QName* := (
     QName("", "facs")
 );
 
+declare variable $dts-document:specialResources as map(xs:string, xs:string) := map {
+    "help_en": $eutil:app-root || "/help/help_en.xml",
+    "help_de": $eutil:app-root || "/help/help_de.xml"
+};
+
 (: FUNCTION DECLARATIONS =================================================== :)
 
 declare function dts-document:wrapSelection(
@@ -247,6 +252,15 @@ declare function dts-document:isMediaTypeCompatible(
         false()
 };
 
+declare function dts-document:resolveResource(
+    $resource as xs:string?
+) as xs:string {
+    if (map:contains($dts-document:specialResources, $resource)) then
+        map:get($dts-document:specialResources, $resource)
+    else
+        $resource
+};
+
 declare function dts-document:document(
     $resource as xs:string?,
     $ref as xs:string?,
@@ -260,6 +274,7 @@ declare function dts-document:document(
     else if (($start and not($end)) or ($end and not($start))) then
         error($errors:INVALID_PARAMETERS, "Both 'start' and 'end' parameters must be provided together.")
     else
+        let $resource := dts-document:resolveResource($resource)
         let $document := eutil:getDoc($resource)/root()
         let $namespace := 
             if ($document) then
