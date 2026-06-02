@@ -260,13 +260,13 @@ declare function dts-document:document(
     else if (($start and not($end)) or ($end and not($start))) then
         error($errors:INVALID_PARAMETERS, "Both 'start' and 'end' parameters must be provided together.")
     else
-        let $document := doc($resource)/root()
+        let $document := eutil:getDoc($resource)/root()
         let $namespace := 
             if ($document) then
                 eutil:getNamespace($document/*)
             else
                 error($errors:NOT_FOUND, "The requested resource was not found.")
-        let $citationTree := doc($eutil:app-root || '/data/trees/citationTrees' || upper-case($namespace) || '.xml')/refsDecl/citeStructure[
+        let $citationTree := eutil:getDoc($eutil:app-root || '/data/trees/citationTrees' || upper-case($namespace) || '.xml')/refsDecl/citeStructure[
             not($tree) or @xml:id = $tree
         ]
         let $mediaTypeCompatible := dts-document:isMediaTypeCompatible($mediaType, $namespace)
