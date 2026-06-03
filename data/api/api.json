@@ -322,6 +322,28 @@
 									"value": "text/html"
 								}
 							}
+						},
+						{
+							"name": "lang",
+							"in": "query",
+							"required": false,
+							"schema": {
+								"type": "string"
+							},
+							"examples": {
+								"Empty": {
+									"summary": "Empty",
+									"value": ""
+								},
+								"English": {
+									"summary": "English",
+									"value": "en"
+								},
+								"German": {
+									"summary": "German",
+									"value": "de"
+								}
+							}
 						}
 				],
 				"responses": {

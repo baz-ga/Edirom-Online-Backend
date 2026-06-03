@@ -70,7 +70,8 @@ declare function api:document ($request as map(*)) {
                 if (exists($request?parameters?start)) then xs:string($request?parameters?start) else "",
                 if (exists($request?parameters?end)) then xs:string($request?parameters?end) else "",
                 xs:string($request?parameters?tree),
-                $mediaType
+                $mediaType,
+                if (exists($request?parameters?lang)) then xs:string($request?parameters?lang) else ""
             )
             return
                 roaster:response(200, $mediaType, $document, $headers)

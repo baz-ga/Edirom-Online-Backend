@@ -57,7 +57,7 @@ declare variable $dts-document:specialResources as map(xs:string, xs:string) := 
 }; (: TODO: this is a temporary solution.
     There should be a collection also.
     Make them available to collection and navigation endopoints. :)
-    
+
 (: FUNCTION DECLARATIONS =================================================== :)
 
 declare function dts-document:wrapSelection(
@@ -263,13 +263,42 @@ declare function dts-document:resolveResource(
         $resource
 };
 
+(:
+declare function dts-document:transformTEIToHTML(
+    $xml as node(),
+    $namespace as xs:string,
+    $ref as xs:string?,
+    $start as xs:string?,
+    $end as xs:string?,
+    $lang as xs:string?,
+    $xsltBase as xs:string,
+    $xslInstruction as processing-instruction()?
+) as document-node() {
+    let $xslPath :=
+        if ($namespace eq "mei") then
+            error($errors:UNSUPPORTED_DOCUMENT_FORMAT, "MEI documents cannot be transformed to HTML. Namespace: " || $namespace)
+        else if ($namespace eq "tei") then
+            let $xslInstruction :=
+                for $i in fn:serialize($xslInstruction, ())
+                return
+                    if (matches($i, 'type="text/xsl"')) then
+                    (substring-before(substring-after($i, 'href="'), '"'))
+                else
+                    ()
+        else
+            error($errors:UNSUPPORTED_DOCUMENT_FORMAT, "The format of the requested document is not supported for HTML transformation. Namespace: " || $namespace)
+    return
+        transform:transform($xml, $xslPath, <parameters><param name="base" value="{$xsltBase}"/></parameters>)
+};
+:)
 declare function dts-document:document(
     $resource as xs:string?,
     $ref as xs:string?,
     $start as xs:string?,
     $end as xs:string?,
     $tree as xs:string?,
-    $mediaType as xs:string?
+    $mediaType as xs:string?,
+    $lang as xs:string?
 ) as document-node() {
     if ($ref and ($start or $end)) then
         error($errors:INVALID_PARAMETERS, "The 'ref' parameter cannot be used together with 'start' or 'end'.")
@@ -289,7 +318,7 @@ declare function dts-document:document(
         let $mediaTypeCompatible := dts-document:isMediaTypeCompatible($mediaType, $namespace)
 
 
-        let $output := 
+        let $outputXmlRaw := 
             if (not($mediaTypeCompatible)) then
                 error($errors:UNSUPPORTED_MEDIA_TYPE, "The requested media type is not compatible with the document format. Media type: " || $mediaType || ", Namespace: " || $namespace)
             else if (not($ref) and not($start) and not($end)) then
@@ -301,8 +330,19 @@ declare function dts-document:document(
         
         (: TODO: transformations should be applied here only when edirom output is requested :)
         let $xsltBase := concat(replace(system:get-module-load-path(), 'embedded-eXist-server', ''), '/../xslt/')
-        let $output := transform:transform($output, concat($xsltBase, 'edirom_prepareAnnotsForRendering.xsl'), <parameters/>)
-            
+        let $outputXml := transform:transform($outputXmlRaw, concat($xsltBase, 'edirom_prepareAnnotsForRendering.xsl'), <parameters/>)
+
+        let $output :=
+            if (contains($mediaType, "xml")) then
+                document { $outputXml }
+            (:
+            else if (contains($mediaType, "html")) then
+                let $xslInstruction := $document//processing-instruction(xml-stylesheet)
+                return
+                    dts-document:transformTEIToHTML($outputXml, $namespace, $ref, $start, $end, $lang, $xsltBase, $xslInstruction)
+            :)
+            else
+                error($errors:UNSUPPORTED_MEDIA_TYPE, "The requested media type is not supported. Media type: " || $mediaType)
         return
-            document { $output }
+            $output
 };
