@@ -21,6 +21,8 @@ declare namespace dts = "https://w3id.org/dts/api#";
 declare namespace mei = "http://www.music-encoding.org/ns/mei";
 declare namespace system = "http://exist-db.org/xquery/system";
 declare namespace transform = "http://exist-db.org/xquery/transform";
+declare namespace xhtml = "http://www.w3.org/1999/xhtml";
+declare namespace request = "http://exist-db.org/xquery/request";
 
 (: VARIABLE DECLARATIONS ================================================== :)
 
@@ -247,7 +249,7 @@ declare function dts-document:isMediaTypeCompatible(
     else if ($namespace eq "mei") then
         contains($mediaType, "application/xml") or contains($mediaType, "text/xml") or contains($mediaType, "application/mei+xml")
     else if ($namespace eq "tei") then
-        contains($mediaType, "application/xml") or contains($mediaType, "text/xml") or contains($mediaType, "application/tei+xml")
+        contains($mediaType, "application/xml") or contains($mediaType, "text/xml") or contains($mediaType, "application/tei+xml") or contains($mediaType, "text/html")
     else if ($namespace eq "edirom") then
         contains($mediaType, "application/xml") or contains($mediaType, "text/xml")
     else
@@ -263,34 +265,69 @@ declare function dts-document:resolveResource(
         $resource
 };
 
-(:
 declare function dts-document:transformTEIToHTML(
     $xml as node(),
-    $namespace as xs:string,
-    $ref as xs:string?,
-    $start as xs:string?,
-    $end as xs:string?,
+    $resource as xs:string?,
     $lang as xs:string?,
     $xsltBase as xs:string,
     $xslInstruction as processing-instruction()?
-) as document-node() {
-    let $xslPath :=
-        if ($namespace eq "mei") then
-            error($errors:UNSUPPORTED_DOCUMENT_FORMAT, "MEI documents cannot be transformed to HTML. Namespace: " || $namespace)
-        else if ($namespace eq "tei") then
-            let $xslInstruction :=
-                for $i in fn:serialize($xslInstruction, ())
-                return
-                    if (matches($i, 'type="text/xsl"')) then
-                    (substring-before(substring-after($i, 'href="'), '"'))
-                else
-                    ()
+) as element() {
+    let $xslInstruction :=
+        for $i in fn:serialize($xslInstruction, ())
+        return
+            if (matches($i, 'type="text/xsl"')) then
+            (substring-before(substring-after($i, 'href="'), '"'))
         else
-            error($errors:UNSUPPORTED_DOCUMENT_FORMAT, "The format of the requested document is not supported for HTML transformation. Namespace: " || $namespace)
+            ()
+
+    let $contextPath := request:get-scheme()|| "://" || request:get-server-name() || ":" || request:get-server-port() || request:get-context-path()
+
+    let $xsl :=
+        if ($xslInstruction) then
+            ($xslInstruction)
+        else
+            ('../xslt/tei/profiles/edirom-body/teiBody2HTML.xsl')
+
+    (:TODO introduce injection-point for tei-stylesheet parameters :)
+    let $params := (
+        (: parameters for Edirom-Online :)
+        <param name="lang" value="{$lang}"/>,
+        <param name="docUri" value="{$resource}"/>,
+        <param name="contextPath" value="{$contextPath}"/>,
+        (: parameters for the TEI Stylesheets :)
+        <param name="autoHead" value="false"/>,
+        <param name="autoToc" value="false"/>,
+        <param name="base" value="{concat($xsltBase, '/../xslt/')}"/>,
+        <param name="documentationLanguage" value="{$lang}"/>,
+        <param name="footnoteBackLink" value="true"/>,
+        <param name="numberHeadings" value="false"/>,
+        <param name="pageLayout" value="CSS"/>
+    )
+
+    let $xml := transform:transform($xml, doc($xsl), <parameters>{$params}</parameters>)
+
+    (: TODO: Do something about this: Do a second transformation to add edirom online ID prefixes for unique ID values if object is open mutiple times :)
+    (:
+    let $xsl := '../xslt/edirom_idPrefix.xsl'
+
+    let $params := (
+        <param name="idPrefix" value="{$idPrefix}"/>
+    )
+    :)
+
+    let $body := $xml//xhtml:body
+
     return
-        transform:transform($xml, $xslPath, <parameters><param name="base" value="{$xsltBase}"/></parameters>)
+        element div {
+            for $attribute in $body/@*
+            return
+                $attribute,
+            for $node in $body/node()
+            return
+                $node
+        }
 };
-:)
+
 declare function dts-document:document(
     $resource as xs:string?,
     $ref as xs:string?,
@@ -335,14 +372,16 @@ declare function dts-document:document(
         let $output :=
             if (contains($mediaType, "xml")) then
                 document { $outputXml }
-            (:
-            else if (contains($mediaType, "html")) then
+            else if ($namespace eq "tei" and contains($mediaType, "html")) then
                 let $xslInstruction := $document//processing-instruction(xml-stylesheet)
                 return
-                    dts-document:transformTEIToHTML($outputXml, $namespace, $ref, $start, $end, $lang, $xsltBase, $xslInstruction)
+                    document { dts-document:transformTEIToHTML($outputXml, $resource, $lang, $xsltBase, $xslInstruction) }
+            (:
+            else if ($namespace eq "mei" and contains($mediaType, "html") and $ref eq "meiHead") then
+                TODO
             :)
             else
-                error($errors:UNSUPPORTED_MEDIA_TYPE, "The requested media type is not supported. Media type: " || $mediaType)
+                error($errors:UNSUPPORTED_MEDIA_TYPE, "The requested media type is not supported. Media type: " || $mediaType || ", Namespace: " || $namespace || ", Ref: " || $ref)
         return
             $output
 };

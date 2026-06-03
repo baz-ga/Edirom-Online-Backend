@@ -502,7 +502,7 @@ declare
     %test:arg("start") %test:arg("end") %test:arg("tree")
     %test:arg("mediaType", "text/html")
     %test:arg("lang", "")
-    %test:assertXPath("/Q{http://www.w3.org/1999/xhtml}div[@class='teiHeader']") (: TODO check this condition :)
+    %test:assertXPath("//Q{http://www.w3.org/1999/xhtml}h1") (: TODO check this condition :)
     (: get the help by resource=help_en :)
     (: TODO: ideally help should be processed like any other tei document :)
     %test:arg("resource", "help_en")
