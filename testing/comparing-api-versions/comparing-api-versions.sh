@@ -17,6 +17,13 @@ fi
 tmpdir=$(mktemp -d)
 trap 'rm -rf "$tmpdir"' EXIT
 
+strip_namespaces() {
+  local file="$1"
+  local tmp_file="${file}.tmp"
+  sed -E 's/[[:space:]]+xmlns(:(exist|functx|xd))?="(http:\/\/www\.w3\.org\/1999\/xhtml|http:\/\/exist\.sourceforge\.net\/NS\/exist|http:\/\/www\.functx\.com|http:\/\/www\.oxygenxml\.com\/ns\/doc\/xsl)"//g' "$file" > "$tmp_file"
+  mv "$tmp_file" "$file"
+}
+
 for i in "${!v1_urls[@]}"; do
   index=$((i + 1))
   v1_file="$tmpdir/v1_${index}.out"
@@ -28,6 +35,9 @@ for i in "${!v1_urls[@]}"; do
 
   curl -sS --fail "${v1_urls[$i]}" -o "$v1_file"
   curl -sS --fail "${v2_urls[$i]}" -o "$v2_file"
+
+  strip_namespaces "$v1_file"
+  strip_namespaces "$v2_file"
 
   diff_output=$(diff -u "$v1_file" "$v2_file" || true)
   if [[ -z "$diff_output" ]]; then

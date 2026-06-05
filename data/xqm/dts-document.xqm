@@ -273,6 +273,7 @@ declare function dts-document:transformTEIToHTML(
     $xslInstruction as processing-instruction()?,
     $idPrefix as xs:string?
 ) as element() {
+    let $doc := $xml
     let $xslInstruction :=
         for $i in fn:serialize($xslInstruction, ())
         return
@@ -305,7 +306,7 @@ declare function dts-document:transformTEIToHTML(
         <param name="pageLayout" value="CSS"/>
     )
 
-    let $xml := transform:transform($xml, doc($xsl), <parameters>{$params}</parameters>)
+    let $doc := transform:transform($doc, doc($xsl), <parameters>{$params}</parameters>)
 
     (: TODO: Do something about this: Do a second transformation to add edirom online ID prefixes for unique ID values if object is open mutiple times :)
     let $xsl := '../xslt/edirom_idPrefix.xsl'
@@ -313,9 +314,9 @@ declare function dts-document:transformTEIToHTML(
     let $params := (
         <param name="idPrefix" value="{$idPrefix}"/>
     )
-    let $xml := transform:transform($xml, doc($xsl), <parameters>{$params}</parameters>)
+    let $doc := transform:transform($doc, doc($xsl), <parameters>{$params}</parameters>)
 
-    let $body := $xml//xhtml:body
+    let $body := $doc//xhtml:body
 
     return
         element div {
