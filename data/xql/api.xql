@@ -39,7 +39,7 @@ declare function api:entryPoint ($request as map(*)) {
         "@type": "EntryPoint",
         "collection": concat($base-url, "/api/collection/{?id,page,nav}"),
         "navigation" : concat($base-url, "/api/navigation/{?resource,ref,start,end,down,tree,page}"),
-        "document": concat($base-url, "/api/document/{?resource,ref,start,end,tree,mediaType}")
+        "document": concat($base-url, "/api/document/{?resource,ref,start,end,tree,mediaType,lang,idPrefix}")
     }
 };
 
@@ -62,6 +62,10 @@ declare function api:document ($request as map(*)) {
     let $headers := map {
         "Link": concat($base-url, '/api/collection/?resource=', $resource, '; rel="collection"')
     }
+    let $html-parameters := map {
+        "lang": if (exists($request?parameters?lang)) then xs:string($request?parameters?lang) else "",
+        "idPrefix": if (exists($request?parameters?idPrefix)) then xs:string($request?parameters?idPrefix) else ""
+    }
     return
         try {
             let $document := dts-document:document(
@@ -71,7 +75,7 @@ declare function api:document ($request as map(*)) {
                 if (exists($request?parameters?end)) then xs:string($request?parameters?end) else "",
                 xs:string($request?parameters?tree),
                 $mediaType,
-                if (exists($request?parameters?lang)) then xs:string($request?parameters?lang) else ""
+                $html-parameters
             )
             return
                 roaster:response(200, $mediaType, $document, $headers)

@@ -270,7 +270,8 @@ declare function dts-document:transformTEIToHTML(
     $resource as xs:string?,
     $lang as xs:string?,
     $xsltBase as xs:string,
-    $xslInstruction as processing-instruction()?
+    $xslInstruction as processing-instruction()?,
+    $idPrefix as xs:string?
 ) as element() {
     let $xslInstruction :=
         for $i in fn:serialize($xslInstruction, ())
@@ -307,13 +308,12 @@ declare function dts-document:transformTEIToHTML(
     let $xml := transform:transform($xml, doc($xsl), <parameters>{$params}</parameters>)
 
     (: TODO: Do something about this: Do a second transformation to add edirom online ID prefixes for unique ID values if object is open mutiple times :)
-    (:
     let $xsl := '../xslt/edirom_idPrefix.xsl'
 
     let $params := (
         <param name="idPrefix" value="{$idPrefix}"/>
     )
-    :)
+    let $xml := transform:transform($xml, doc($xsl), <parameters>{$params}</parameters>)
 
     let $body := $xml//xhtml:body
 
@@ -335,7 +335,7 @@ declare function dts-document:document(
     $end as xs:string?,
     $tree as xs:string?,
     $mediaType as xs:string?,
-    $lang as xs:string?
+    $html-parameters as map(xs:string, xs:string)
 ) as document-node() {
     if ($ref and ($start or $end)) then
         error($errors:INVALID_PARAMETERS, "The 'ref' parameter cannot be used together with 'start' or 'end'.")
@@ -374,8 +374,10 @@ declare function dts-document:document(
                 document { $outputXml }
             else if ($namespace eq "tei" and contains($mediaType, "html")) then
                 let $xslInstruction := $document//processing-instruction(xml-stylesheet)
+                let $lang := if (map:contains($html-parameters, "lang")) then map:get($html-parameters, "lang") else ""
+                let $idPrefix := if (map:contains($html-parameters, "idPrefix")) then map:get($html-parameters, "idPrefix") else ""
                 return
-                    document { dts-document:transformTEIToHTML($outputXml, $resource, $lang, $xsltBase, $xslInstruction) }
+                    document { dts-document:transformTEIToHTML($outputXml, $resource, $lang, $xsltBase, $xslInstruction, $idPrefix) }
             (:
             else if ($namespace eq "mei" and contains($mediaType, "html") and $ref eq "meiHead") then
                 TODO
