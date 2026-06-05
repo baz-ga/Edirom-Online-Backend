@@ -284,6 +284,15 @@ declare function dts-document:transformTEIToHTML(
 
     let $contextPath := request:get-scheme()|| "://" || request:get-server-name() || ":" || request:get-server-port() || request:get-context-path()
 
+    let $xsl := doc('../xslt/edirom_langReplacement.xsl')
+    let $doc := 
+        transform:transform($doc, $xsl,
+            <parameters>
+                <param name="base" value="{concat($xsltBase, '/../xslt/')}"/>
+                <param name="lang" value="{$lang}"/>
+            </parameters>
+        )
+
     let $xsl :=
         if ($xslInstruction) then
             ($xslInstruction)
