@@ -54,8 +54,8 @@ declare variable $dts-document:referenceAttributes as xs:QName* := (
 );
 
 declare variable $dts-document:specialResources as map(xs:string, xs:string) := map {
-    "help_en": $eutil:app-root || "/help/help_en.xml",
-    "help_de": $eutil:app-root || "/help/help_de.xml"
+    "help_en": "xmldb:exist:///db/apps/Edirom-Online-Backend/help/help_en.xml",
+    "help_de": "xmldb:exist:///db/apps/Edirom-Online-Backend/help/help_de.xml"
 }; (: TODO: this is a temporary solution.
     There should be a collection also.
     Make them available to collection and navigation endopoints. :)
@@ -312,7 +312,9 @@ declare function dts-document:transformTEIToHTML(
         <param name="documentationLanguage" value="{$lang}"/>,
         <param name="footnoteBackLink" value="true"/>,
         <param name="numberHeadings" value="false"/>,
-        <param name="pageLayout" value="CSS"/>
+        <param name="pageLayout" value="CSS"/>,
+        (: parameters for the Help documents :)
+        <param name="tocDepth" value="1"/>
     )
 
     let $doc := transform:transform($doc, doc($xsl), <parameters>{$params}</parameters>)
