@@ -288,7 +288,7 @@ declare function dts-document:transformTEIToHTML(
     let $doc := 
         transform:transform($doc, $xsl,
             <parameters>
-                <param name="base" value="{concat($xsltBase, '/../xslt/')}"/>
+                <param name="base" value="{$xsltBase}"/>
                 <param name="lang" value="{$lang}"/>
             </parameters>
         )
@@ -306,15 +306,8 @@ declare function dts-document:transformTEIToHTML(
         <param name="docUri" value="{$resource}"/>,
         <param name="contextPath" value="{$contextPath}"/>,
         (: parameters for the TEI Stylesheets :)
-        <param name="autoHead" value="false"/>,
-        <param name="autoToc" value="false"/>,
-        <param name="base" value="{concat($xsltBase, '/../xslt/')}"/>,
-        <param name="documentationLanguage" value="{$lang}"/>,
-        <param name="footnoteBackLink" value="true"/>,
-        <param name="numberHeadings" value="false"/>,
-        <param name="pageLayout" value="CSS"/>,
-        (: parameters for the Help documents :)
-        <param name="tocDepth" value="1"/>
+        <param name="base" value="{$xsltBase}"/>,
+        <param name="footnoteBackLink" value="true"/>
     )
 
     let $doc := transform:transform($doc, doc($xsl), <parameters>{$params}</parameters>)
