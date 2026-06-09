@@ -586,4 +586,7 @@ declare
             dts-document:document($resource, $ref, $start, $end, $tree, $mediaType, $html-parameters)
 };
 
+(: TODO test with differen html parameters, e.g. idPrefix :)
+
 (: TODO tests with json media type :)
+
