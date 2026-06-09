@@ -268,10 +268,9 @@ declare function dts-document:resolveResource(
 declare function dts-document:transformTEIToHTML(
     $xml as node(),
     $resource as xs:string?,
-    $lang as xs:string?,
     $xsltBase as xs:string,
     $xslInstruction as processing-instruction()?,
-    $idPrefix as xs:string?
+    $htmlParameters as map(xs:string, xs:string)
 ) as element() {
     let $doc := $xml
     let $xslInstruction :=
@@ -281,6 +280,16 @@ declare function dts-document:transformTEIToHTML(
             (substring-before(substring-after($i, 'href="'), '"'))
         else
             ()
+
+    (: Unpack html parameters :)
+    let $lang := if (map:contains($htmlParameters, "lang")) then map:get($htmlParameters, "lang") else ""
+    let $idPrefix := if (map:contains($htmlParameters, "idPrefix")) then map:get($htmlParameters, "idPrefix") else ""
+    let $autoHead := if (map:contains($htmlParameters, "autoHead")) then map:get($htmlParameters, "autoHead") else "false"
+    let $autoToc := if (map:contains($htmlParameters, "autoToc")) then map:get($htmlParameters, "autoToc") else "false"
+    let $tocDepth := if (map:contains($htmlParameters, "tocDepth")) then map:get($htmlParameters, "tocDepth") else "1"
+    let $footnoteBackLinks := if (map:contains($htmlParameters, "footnoteBackLinks")) then map:get($htmlParameters, "footnoteBackLinks") else "true"
+    let $numberHeadings := if (map:contains($htmlParameters, "numberHeadings")) then map:get($htmlParameters, "numberHeadings") else "false"
+    let $pageLayout := if (map:contains($htmlParameters, "pageLayout")) then map:get($htmlParameters, "pageLayout") else "CSS"
 
     let $contextPath := request:get-scheme()|| "://" || request:get-server-name() || ":" || request:get-server-port() || request:get-context-path()
 
@@ -299,15 +308,20 @@ declare function dts-document:transformTEIToHTML(
         else
             ('../xslt/tei/profiles/edirom-body/teiBody2HTML.xsl')
 
-    (:TODO introduce injection-point for tei-stylesheet parameters :)
     let $params := (
-        (: parameters for Edirom-Online :)
+        (: parameters for teiBody2HTML stylesheet :)
         <param name="lang" value="{$lang}"/>,
         <param name="docUri" value="{$resource}"/>,
         <param name="contextPath" value="{$contextPath}"/>,
-        (: parameters for the TEI Stylesheets :)
         <param name="base" value="{$xsltBase}"/>,
-        <param name="footnoteBackLink" value="true"/>
+        <param name="footnoteBackLink" value="{$footnoteBackLinks}"/>,
+        (: parameters for the TEI Stylesheets :)
+        <param name="autoHead" value="{$autoHead}"/>,
+        <param name="autoToc" value="{$autoToc}"/>,
+        <param name="tocDepth" value="{$tocDepth}"/>,
+        <param name="documentationLanguage" value="{$lang}"/>,
+        <param name="numberHeadings" value="{$numberHeadings}"/>,
+        <param name="pageLayout" value="{$pageLayout}"/>
     )
 
     let $doc := transform:transform($doc, doc($xsl), <parameters>{$params}</parameters>)
@@ -340,7 +354,7 @@ declare function dts-document:document(
     $end as xs:string?,
     $tree as xs:string?,
     $mediaType as xs:string?,
-    $html-parameters as map(xs:string, xs:string)
+    $htmlParameters as map(xs:string, xs:string)
 ) as document-node() {
     if ($ref and ($start or $end)) then
         error($errors:INVALID_PARAMETERS, "The 'ref' parameter cannot be used together with 'start' or 'end'.")
@@ -379,10 +393,8 @@ declare function dts-document:document(
                 document { $outputXml }
             else if ($namespace eq "tei" and contains($mediaType, "html")) then
                 let $xslInstruction := $document//processing-instruction(xml-stylesheet)
-                let $lang := if (map:contains($html-parameters, "lang")) then map:get($html-parameters, "lang") else ""
-                let $idPrefix := if (map:contains($html-parameters, "idPrefix")) then map:get($html-parameters, "idPrefix") else ""
                 return
-                    document { dts-document:transformTEIToHTML($outputXml, $resource, $lang, $xsltBase, $xslInstruction, $idPrefix) }
+                    document { dts-document:transformTEIToHTML($outputXml, $resource, $xsltBase, $xslInstruction, $htmlParameters) }
             (:
             else if ($namespace eq "mei" and contains($mediaType, "html") and $ref eq "meiHead") then
                 TODO

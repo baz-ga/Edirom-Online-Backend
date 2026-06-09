@@ -367,11 +367,147 @@
 									"value": "prefix2-"
 								}
 							}
+						},
+						{
+							"name": "autoHead",
+							"in": "query",
+							"required": false,
+							"description": "Whether to automatically generate a header for the returned document",
+							"schema": {
+								"type": "string",
+								"enum": [
+									"true",
+									"false"
+								],
+								"default": "false"
+							},
+							"examples": {
+								"True": {
+									"summary": "True",
+									"value": "true"
+								},
+								"False": {
+									"summary": "False",
+									"value": "false"
+								}
+							}
+						},
+						{
+							"name": "autoToc",
+							"in": "query",
+							"required": false,
+							"description": "Whether to automatically generate a table of contents for the returned document",
+							"schema": {
+								"type": "string",
+								"enum": [
+									"true",
+									"false"
+								],
+								"default": "false"
+							},
+							"examples": {
+								"True": {
+									"summary": "True",
+									"value": "true"
+								},
+								"False": {
+									"summary": "False",
+									"value": "false"
+								}
+							}
+						},
+						{
+							"name": "tocDepth",
+							"in": "query",
+							"required": false,
+							"description": "The depth of the table of contents in the returned document, only used if autoToc is true",
+							"schema": {
+								"type": "string",
+								"default": "1"
+							},
+							"examples": {
+								"1": {
+									"summary": "1",
+									"value": "1"
+								},
+								"2": {
+									"summary": "2",
+									"value": "2"
+								},
+								"3": {
+									"summary": "3",
+									"value": "3"
+								}
+							}
+						},
+						{
+							"name": "footnoteBackLinks",
+							"in": "query",
+							"required": false,
+							"description": "Whether to add back links from footnotes to their references in the text, only used if autoHead is true",
+							"schema": {
+								"type": "string",
+								"enum": [
+									"true",
+									"false"
+								],
+								"default": "true"
+							},
+							"examples": {
+								"True": {
+									"summary": "True",
+									"value": "true"
+								},
+								"False": {
+									"summary": "False",
+									"value": "false"
+								}
+							}
+						},
+						{
+							"name": "numberHeadings",
+							"in": "query",
+							"required": false,
+							"description": "Whether to add numbers to headings in the returned document, only used if autoHead is true",
+							"schema": {
+								"type": "string",
+								"enum": [
+									"true",
+									"false"
+								],
+								"default": "false"
+							},
+							"examples": {
+								"True": {
+									"summary": "True",
+									"value": "true"
+								},
+								"False": {
+									"summary": "False",
+									"value": "false"
+								}
+							}
+						},
+						{
+							"name": "pageLayout",
+							"in": "query",
+							"required": false,
+							"description": "Whether to use CSS or SVG for page layout in the returned document, only used if autoHead is true",
+							"schema": {
+								"type": "string",
+								"default": "CSS"
+							},
+							"examples": {
+								"CSS": {
+									"summary": "CSS",
+									"value": "CSS"
+								}
+							}
 						}
-				],
+					],
 				"responses": {
 					"200": {
-						"description": "Succesful response"
+						"description": "Successful response"
 					},
 					"400": {
 						"description": "Bad request"

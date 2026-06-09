@@ -62,9 +62,15 @@ declare function api:document ($request as map(*)) {
     let $headers := map {
         "Link": concat($base-url, '/api/collection/?resource=', $resource, '; rel="collection"')
     }
-    let $html-parameters := map {
+    let $htmlParameters := map {
         "lang": if (exists($request?parameters?lang)) then xs:string($request?parameters?lang) else "",
-        "idPrefix": if (exists($request?parameters?idPrefix)) then xs:string($request?parameters?idPrefix) else ""
+        "idPrefix": if (exists($request?parameters?idPrefix)) then xs:string($request?parameters?idPrefix) else "",
+        "autoHead": if (exists($request?parameters?autoHead)) then xs:string($request?parameters?autoHead) else "false",
+        "autoToc": if (exists($request?parameters?autoToc)) then xs:string($request?parameters?autoToc) else "false",
+        "tocDepth": if (exists($request?parameters?tocDepth)) then xs:string($request?parameters?tocDepth) else "1",
+        "footnoteBackLinks": if (exists($request?parameters?footnoteBackLinks)) then xs:string($request?parameters?footnoteBackLinks) else "true",
+        "numberHeadings": if (exists($request?parameters?numberHeadings)) then xs:string($request?parameters?numberHeadings) else "false",
+        'pageLayout' : if (exists($request?parameters?pageLayout)) then xs:string($request?parameters?pageLayout) else "CSS"
     }
     return
         try {
@@ -75,7 +81,7 @@ declare function api:document ($request as map(*)) {
                 if (exists($request?parameters?end)) then xs:string($request?parameters?end) else "",
                 xs:string($request?parameters?tree),
                 $mediaType,
-                $html-parameters
+                $htmlParameters
             )
             return
                 roaster:response(200, $mediaType, $document, $headers)
