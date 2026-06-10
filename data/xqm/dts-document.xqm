@@ -166,8 +166,7 @@ declare function dts-document:copySelectedChildren(
     return
         if ($isFirstSelectedChild) then
             <dts:wrapper xmlns:dts="https://w3id.org/dts/api#">{
-                for $selectedChild in $node/*[dts-document:matchesNode(., $selection)]
-                return dts-document:copySelection($selectedChild, $selection, $fullCopyNodes, $keptNodes)
+                $selection
             }</dts:wrapper>
         else if (exists($selectedChildren)) then
             ()
@@ -250,7 +249,11 @@ declare function dts-document:selectElementOrRange(
         ) then
             let $nextPb := ($selection[1]/following::tei:pb)[1]
             let $pb1 := $selection[1]/@xml:id
-            let $pb2 := $nextPb/@xml:id
+            let $pb2 := 
+                if ($nextPb) then
+                    $nextPb/@xml:id
+                else
+                    ''
             let $commonAncestorID :=
                 if ($nextPb) then
                     ($selection[1]/ancestor-or-self::*[. intersect $nextPb/ancestor-or-self::*])[last()]/@xml:id
