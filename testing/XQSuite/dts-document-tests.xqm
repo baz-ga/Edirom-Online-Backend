@@ -6,6 +6,7 @@ import module namespace dts-document = "http://www.edirom.de/api/dts-document" a
 
 declare namespace dts="https://w3id.org/dts/api#";
 declare namespace mei="http://www.music-encoding.org/ns/mei";
+declare namespace tei="http://www.tei-c.org/ns/1.0";
 declare namespace test="http://exist-db.org/xquery/xqsuite";
 
 declare function ddt:citationTree(
@@ -611,6 +612,33 @@ declare
         return
             dts-document:document($resource, $ref, $start, $end, $tree, $mediaType, $html-parameters)
 };
+
+declare
+    (: retrieve tei page starting in the middle of div :)
+    %test:arg("resource", "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/tei-document.xml")
+    %test:arg("ref", "pb-2")
+    %test:arg("start") %test:arg("end")
+    %test:arg("tree", "paginationStructure")
+    %test:arg("mediaType", "application/xml")
+    %test:arg("lang", "de")
+    %test:assertEmpty
+    function ddt:test-document-elements-not-in-tei-pages(
+        $resource as xs:string,
+        $ref as xs:string?,
+        $start as xs:string?,
+        $end as xs:string?,
+        $tree as xs:string?,
+        $mediaType as xs:string?,
+        $lang as xs:string?
+    ) { 
+        let $html-parameters := map {
+            "lang": if ($lang) then $lang else "de",
+            "idPrefix": ""
+        }
+        let $document :=
+            dts-document:document($resource, $ref, $start, $end, $tree, $mediaType, $html-parameters)
+        return ($document//tei:p[@xml:id = "not-in-p2-1"], $document//tei:p[@xml:id = "not-in-p2-2"])
+    };
 
 (: TODO test with differen html parameters, e.g. idPrefix :)
 

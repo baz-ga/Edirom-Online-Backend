@@ -57,7 +57,7 @@
                hinterfragt – diese Perspektive tauchte dann erstmals explizit im (unten stehenden)
                Vorwort zur 2008 vorgelegten überarbeiteten Fassung der digitalen Edition des
                Klarinettenquintetts auf. </p>
-            <p> Mit sehr überschaubaren Mitteln erstellt, war die erste Veröffentlichung vor allem
+            <p xml:id="not-in-p2-1"> Mit sehr überschaubaren Mitteln erstellt, war die erste Veröffentlichung vor allem
                als <emph>Proof of Concept</emph> angelegt. Die Umsetzung erfolgte mit Macromedia
                Director, einer damals gängigen Software zur Entwicklung interaktiver,
                „multimedialer“ CD-Publikationen. Diese Wahl führte zu schnell sichtbaren
@@ -171,7 +171,7 @@
                Neufassung entstehen, so dass die vorliegende CD einige Unzulänglichkeiten aufweist,
                für die um freundliches Verständnis gebeten wird. </p>
             <pb n="3" xml:id="pb-3"/>
-            <p> Die Strukturierung der Eintragungen in den Varianten und Lesarten durch die Vergabe
+            <p xml:id="not-in-p2-2"> Die Strukturierung der Eintragungen in den Varianten und Lesarten durch die Vergabe
                von Kategorien z.&#8239;B. ist in der vorliegenden Version nur als eine erste
                Demonstration der damit verbundenen neuen Zugangsmöglichkeiten gedacht. Zwar lassen
                sich durch Kombinationen (etwa „Korrektur“ mit „Erstdruck1 / Erstdruck2“) gezielt die
