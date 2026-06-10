@@ -19,6 +19,7 @@ import module namespace errors = "http://www.edirom.de/xquery/errors" at "errors
 
 declare namespace dts = "https://w3id.org/dts/api#";
 declare namespace mei = "http://www.music-encoding.org/ns/mei";
+declare namespace tei = "http://www.tei-c.org/ns/1.0";
 declare namespace system = "http://exist-db.org/xquery/system";
 declare namespace transform = "http://exist-db.org/xquery/transform";
 declare namespace xhtml = "http://www.w3.org/1999/xhtml";
@@ -76,6 +77,19 @@ declare function dts-document:wrapSelection(
         dts-document:copySelection($document/*, $selection, $fullCopyNodes, $keptNodes)
 };
 
+declare function dts-document:matchesNode(
+    $node as element(),
+    $candidates as element()*
+) as xs:boolean {
+    some $candidate in $candidates
+        satisfies $node is $candidate
+        or (
+            $node/@xml:id
+            and $candidate/@xml:id
+            and string($node/@xml:id) eq string($candidate/@xml:id)
+        )
+};
+
 declare function dts-document:preserveIfPrecedingSiblingNodes(
     $keptNodes as element()*
 ) as element()* {
@@ -124,9 +138,9 @@ declare function dts-document:copySelection(
 ) as node()* {
     typeswitch ($node)
         case element() return
-            if ($node intersect $fullCopyNodes) then
+            if (dts-document:matchesNode($node, $fullCopyNodes)) then
                 $node
-            else if ($node intersect $keptNodes) then
+            else if (dts-document:matchesNode($node, $keptNodes)) then
                 element { node-name($node) } {
                     namespace { "xlink" } { "http://www.w3.org/1999/xlink" },
                     $node/@*,
@@ -145,14 +159,14 @@ declare function dts-document:copySelectedChildren(
     $keptNodes as element()*
 ) as node()* {
     for $child in $node/node()
-    let $selectedChildren := $child/self::element()[. intersect $selection]
+    let $selectedChildren := $child/self::element()[dts-document:matchesNode(., $selection)]
     let $isFirstSelectedChild :=
         exists($selectedChildren)
-        and empty($child/preceding-sibling::*[. intersect $selection])
+        and empty($child/preceding-sibling::*[dts-document:matchesNode(., $selection)])
     return
         if ($isFirstSelectedChild) then
             <dts:wrapper xmlns:dts="https://w3id.org/dts/api#">{
-                for $selectedChild in $node/*[. intersect $selection]
+                for $selectedChild in $node/*[dts-document:matchesNode(., $selection)]
                 return dts-document:copySelection($selectedChild, $selection, $fullCopyNodes, $keptNodes)
             }</dts:wrapper>
         else if (exists($selectedChildren)) then
@@ -227,6 +241,27 @@ declare function dts-document:selectElementOrRange(
             ()
     return
         if (
+            $selection
+            and (
+                dts-document:isInCitationTree($selection, $citationTree)
+                or dts-document:isAlwaysPreservedSelection($selection)
+            )
+            and node-name($selection[1]) eq QName("http://www.tei-c.org/ns/1.0", "pb") 
+        ) then
+            let $nextPb := ($selection[1]/following::tei:pb)[1]
+            let $pb1 := $selection[1]/@n
+            let $pb2 := $nextPb/@n
+            let $commonAncestorID := ($selection[1]/ancestor-or-self::*[. intersect $nextPb/ancestor-or-self::*])[last()]/@xml:id
+            let $reduced :=
+                transform:transform($document, doc('../xslt/reduceToPage.xsl'),
+                    <parameters>
+                        <param name="pb1" value="{$pb1}"/>
+                        <param name="pb2" value="{$pb2}"/>
+                    </parameters>
+                )
+            return
+                dts-document:wrapSelection($reduced//*[@xml:id = $commonAncestorID]/*, $document)
+        else if (
             $selection
             and (
                 dts-document:isInCitationTree($selection, $citationTree)
@@ -363,11 +398,12 @@ declare function dts-document:document(
     else
         let $resource := dts-document:resolveResource($resource)
         let $document := eutil:getDoc($resource)/root()
-        let $namespace := 
+        let $document :=
             if ($document) then
-                eutil:getNamespace($document/*)
+                eutil:add-xml-ids($document)
             else
                 error($errors:NOT_FOUND, "The requested resource was not found.")
+        let $namespace := eutil:getNamespace($document/*)
         let $citationTree := eutil:getDoc($eutil:app-root || '/data/trees/citationTrees' || upper-case($namespace) || '.xml')/refsDecl/citeStructure[
             not($tree) or @xml:id = $tree
         ]

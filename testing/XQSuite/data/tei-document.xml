@@ -38,6 +38,7 @@
    </teiHeader>
    <text>
       <body>
+         <pb n="1" xml:id="pb-1"/>
          <head>Vorbemerkung zur dritten digitalen Version des Klarinettenquintetts</head>
          <div xml:id="test-div-1">
             <p> Carl Maria von Webers Klarinettenquintett op.&#8239;34 hat für die Geschichte der
@@ -72,6 +73,7 @@
                   rendition="#italic">Hase oder Igel? Musikeditionen und neue Medien</hi>. In:
                Jürgen Arndt, Werner Keil (Hrsg.): <hi rendition="#italic">„Alte“ Musik und „Neue“
                   Medien</hi>, Hildesheim 2003). </p>
+               <pb n="2" xml:id="pb-2"/>
             <p> Mit Unterstützung der DFG konnten in den Folgejahren wesentliche konzeptionelle und
                technische Neuerungen umgesetzt werden. Dazu gehörte u.&#8239;a. der Umstieg auf
                dynamisch generierte Bildausschnitte, bei denen man als Benutzer:in jederzeit Zugriff
@@ -168,6 +170,7 @@
                die Darstellung der Inhalte haben. Andererseits sollte aber inhaltlich keine
                Neufassung entstehen, so dass die vorliegende CD einige Unzulänglichkeiten aufweist,
                für die um freundliches Verständnis gebeten wird. </p>
+            <pb n="3" xml:id="pb-3"/>
             <p> Die Strukturierung der Eintragungen in den Varianten und Lesarten durch die Vergabe
                von Kategorien z.&#8239;B. ist in der vorliegenden Version nur als eine erste
                Demonstration der damit verbundenen neuen Zugangsmöglichkeiten gedacht. Zwar lassen
