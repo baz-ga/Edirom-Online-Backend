@@ -249,18 +249,22 @@ declare function dts-document:selectElementOrRange(
             and node-name($selection[1]) eq QName("http://www.tei-c.org/ns/1.0", "pb") 
         ) then
             let $nextPb := ($selection[1]/following::tei:pb)[1]
-            let $pb1 := $selection[1]/@n
-            let $pb2 := $nextPb/@n
-            let $commonAncestorID := ($selection[1]/ancestor-or-self::*[. intersect $nextPb/ancestor-or-self::*])[last()]/@xml:id
+            let $pb1 := $selection[1]/@xml:id
+            let $pb2 := $nextPb/@xml:id
+            let $commonAncestorID :=
+                if ($nextPb) then
+                    ($selection[1]/ancestor-or-self::*[. intersect $nextPb/ancestor-or-self::*])[last()]/@xml:id
+                else
+                    ($selection[1]/ancestor-or-self::*[. intersect (($document//text())[last()])/ancestor-or-self::*])[last()]/@xml:id
             let $reduced :=
-                transform:transform($document, doc('../xslt/reduceToPage.xsl'),
+                transform:transform($document, doc('../xslt/reduceToPageById.xsl'),
                     <parameters>
-                        <param name="pb1" value="{$pb1}"/>
-                        <param name="pb2" value="{$pb2}"/>
+                        <param name="pb1_id" value="{$pb1}"/>
+                        <param name="pb2_id" value="{$pb2}"/>
                     </parameters>
                 )
             return
-                dts-document:wrapSelection($reduced//*[@xml:id = $commonAncestorID]/*, $document)
+                dts-document:wrapSelection($reduced/descendant-or-self::*[@xml:id = $commonAncestorID]/*, $document)
         else if (
             $selection
             and (
