@@ -320,6 +320,10 @@ declare function dts-document:transformTEIToHTML(
         else
             ()
 
+    (: Remove DTS wrapper :)
+    let $xsl := doc('../xslt/removeDtsWrapper.xsl')
+    let $doc := transform:transform($doc, $xsl, <parameters/>)
+
     (: Unpack html parameters :)
     let $lang := if (map:contains($htmlParameters, "lang")) then map:get($htmlParameters, "lang") else ""
     let $idPrefix := if (map:contains($htmlParameters, "idPrefix")) then map:get($htmlParameters, "idPrefix") else ""
@@ -332,6 +336,7 @@ declare function dts-document:transformTEIToHTML(
 
     let $contextPath := request:get-scheme()|| "://" || request:get-server-name() || ":" || request:get-server-port() || request:get-context-path()
 
+    (: Apply language replacement stylesheet to replace language-dependent elements :)
     let $xsl := doc('../xslt/edirom_langReplacement.xsl')
     let $doc := 
         transform:transform($doc, $xsl,
@@ -341,6 +346,7 @@ declare function dts-document:transformTEIToHTML(
             </parameters>
         )
 
+    (: Apply stylesheet to convert TEI to HTML :)
     let $xsl :=
         if ($xslInstruction) then
             ($xslInstruction)
@@ -365,7 +371,7 @@ declare function dts-document:transformTEIToHTML(
 
     let $doc := transform:transform($doc, doc($xsl), <parameters>{$params}</parameters>)
 
-    (: TODO: Do something about this: Do a second transformation to add edirom online ID prefixes for unique ID values if object is open mutiple times :)
+    (: TODO: To be moved to the frontend: Do a second transformation to add edirom online ID prefixes for unique ID values if object is open multiple times :)
     let $xsl := '../xslt/edirom_idPrefix.xsl'
 
     let $params := (
