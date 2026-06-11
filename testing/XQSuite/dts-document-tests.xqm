@@ -329,7 +329,7 @@ declare
 
 declare
     %test:assertEquals("selection-2")
-    function ddt:test-selectElementOrRange-selects-ref-in-musicStructure-tree() as xs:string {
+    function ddt:test-selectAndWrap-selects-ref-in-musicStructure-tree() as xs:string {
         let $documentRoot :=
             <mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.0.0">
                 <meiHead/>
@@ -340,13 +340,13 @@ declare
                     </body>
                 </music>
             </mei>
-        let $result := dts-document:selectElementOrRange(document { $documentRoot }, "selection-2", (), (), ddt:citationTree("musicStructure"))
+        let $result := dts-document:selectAndWrap(document { $documentRoot }, "selection-2", (), (), ddt:citationTree("musicStructure"))
         return string($result//dts:wrapper/mei:mdiv/@xml:id)
 };
 
 declare
     %test:assertEquals("selection-1", "selection-2", "selection-3")
-    function ddt:test-selectElementOrRange-selects-start-end-range() as xs:string* {
+    function ddt:test-selectAndWrap-selects-start-end-range() as xs:string* {
         let $documentRoot :=
             <mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.0.0">
                 <meiHead/>
@@ -358,7 +358,7 @@ declare
                     </body>
                 </music>
             </mei>
-        let $result := dts-document:selectElementOrRange(document { $documentRoot }, (), "selection-1", "selection-3", ddt:citationTree("musicStructure"))
+        let $result := dts-document:selectAndWrap(document { $documentRoot }, (), "selection-1", "selection-3", ddt:citationTree("musicStructure"))
         return
             for $mdiv in $result//dts:wrapper/mei:mdiv
             return string($mdiv/@xml:id)
@@ -366,13 +366,13 @@ declare
 
 declare
     %test:assertError("errors:NotFoundError")
-    function ddt:test-selectElementOrRange-errors-when-selection-not-found() as node()* {
+    function ddt:test-selectAndWrap-errors-when-selection-not-found() as node()* {
         let $documentRoot :=
             <mei xmlns="http://www.music-encoding.org/ns/mei" meiversion="5.0.0">
                 <meiHead/>
                 <music><body><mdiv xml:id="selection-1"/></body></music>
             </mei>
-        return dts-document:selectElementOrRange(document { $documentRoot }, "missing", (), (), ddt:citationTree("musicStructure"))
+        return dts-document:selectAndWrap(document { $documentRoot }, "missing", (), (), ddt:citationTree("musicStructure"))
 };
 
 declare
