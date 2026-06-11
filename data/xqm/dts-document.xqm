@@ -223,6 +223,33 @@ declare function dts-document:selectAndWrap(
                     $candidateSelection and
                     (dts-document:isInCitationTree($candidateSelection, $citationTree)
                     or dts-document:isAlwaysPreservedSelection($candidateSelection))
+                    and (node-name($candidateSelection[1]) eq QName("http://www.tei-c.org/ns/1.0", "pb"))
+                ) then
+                    let $nextPb := ($candidateSelection[1]/following::tei:pb)[1]
+                    let $pb1 := $candidateSelection[1]/@xml:id
+                    let $pb2 := 
+                        if ($nextPb) then
+                            $nextPb/@xml:id
+                        else
+                            ''
+                    let $commonAncestorID :=
+                        if ($nextPb) then
+                            ($candidateSelection[1]/ancestor-or-self::*[. intersect $nextPb/ancestor-or-self::*])[last()]/@xml:id
+                        else
+                            ($candidateSelection[1]/ancestor-or-self::*[. intersect (($document//text())[last()])/ancestor-or-self::*])[last()]/@xml:id
+                    let $reduced :=
+                        transform:transform($document, doc('../xslt/reduceToPageById.xsl'),
+                            <parameters>
+                                <param name="pb1_id" value="{$pb1}"/>
+                                <param name="pb2_id" value="{$pb2}"/>
+                            </parameters>
+                        )
+                    return
+                        $reduced/descendant-or-self::*[@xml:id = $commonAncestorID]/*
+                else if (
+                    $candidateSelection and
+                    (dts-document:isInCitationTree($candidateSelection, $citationTree)
+                    or dts-document:isAlwaysPreservedSelection($candidateSelection))
                 ) then
                     $candidateSelection
                 else if ($candidateSelection) then
@@ -271,30 +298,7 @@ declare function dts-document:selectAndWrap(
         else
             ()
     return
-        if (node-name($selection[1]) eq QName("http://www.tei-c.org/ns/1.0", "pb")) then
-            let $nextPb := ($selection[1]/following::tei:pb)[1]
-            let $pb1 := $selection[1]/@xml:id
-            let $pb2 := 
-                if ($nextPb) then
-                    $nextPb/@xml:id
-                else
-                    ''
-            let $commonAncestorID :=
-                if ($nextPb) then
-                    ($selection[1]/ancestor-or-self::*[. intersect $nextPb/ancestor-or-self::*])[last()]/@xml:id
-                else
-                    ($selection[1]/ancestor-or-self::*[. intersect (($document//text())[last()])/ancestor-or-self::*])[last()]/@xml:id
-            let $reduced :=
-                transform:transform($document, doc('../xslt/reduceToPageById.xsl'),
-                    <parameters>
-                        <param name="pb1_id" value="{$pb1}"/>
-                        <param name="pb2_id" value="{$pb2}"/>
-                    </parameters>
-                )
-            return
-                dts-document:wrapSelection($reduced/descendant-or-self::*[@xml:id = $commonAncestorID]/*, $document)
-        else
-            dts-document:wrapSelection($selection, $document)
+        dts-document:wrapSelection($selection, $document)
 };
 
 declare function dts-document:isMediaTypeCompatible(
