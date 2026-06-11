@@ -358,8 +358,8 @@ declare function annotation:get-referenced-category-elements(
  :)
 declare function annotation:getParticipants($anno as element()) as xs:string* {
 
-    let $ps := tokenize($anno/@plist, ' ')
-    let $uris := distinct-values(for $uri in $ps return substring-before($uri,'#'))
+    let $plistTokens := tokenize(normalize-space($anno/@plist), ' ')
+    let $uris := distinct-values(for $uri in $plistTokens return tokenize($uri,'#')[1])
 
     return $uris
 };
