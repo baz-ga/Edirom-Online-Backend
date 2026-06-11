@@ -346,7 +346,7 @@ declare function annotation:get-referenced-category-elements(
  : Returns a sequence of document URIs addressed by an annotation
  :
  : @param $anno element() The Annotation to process
- : @return sequence of xs:string, might be an empty sequence
+ : @return sequence of xs:anyURI, might be an empty sequence
  :)
 declare function annotation:getParticipants($anno as element()) as xs:anyURI* {
 
