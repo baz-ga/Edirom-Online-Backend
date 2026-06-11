@@ -203,6 +203,34 @@ declare function dts-document:matchesCitationStructure(
         and (every $node in $elements satisfies node-name($node) eq $matchName)
 };
 
+declare function dts-document:selectTEIPages(
+    $document as node(),
+    $startPb as node()*,
+    $endPb as node()*
+) as node()* {
+    let $nextPb := ($startPb/following::tei:pb)[1]
+    let $pb1 := $startPb/@xml:id
+    let $pb2 := 
+        if ($nextPb) then
+            $nextPb/@xml:id
+        else
+            ''
+    let $commonAncestorID :=
+        if ($nextPb) then
+            ($startPb/ancestor-or-self::*[. intersect $nextPb/ancestor-or-self::*])[last()]/@xml:id
+        else
+            ($startPb/ancestor-or-self::*[. intersect (($document//text())[last()])/ancestor-or-self::*])[last()]/@xml:id
+    let $reduced :=
+        transform:transform($document, doc('../xslt/reduceToPageById.xsl'),
+            <parameters>
+                <param name="pb1_id" value="{$pb1}"/>
+                <param name="pb2_id" value="{$pb2}"/>
+            </parameters>
+        )
+    return
+        $reduced/descendant-or-self::*[@xml:id = $commonAncestorID]/*
+};
+
 declare function dts-document:selectElementOrRange(
     $document as node(),
     $ref as xs:string?,
@@ -224,27 +252,7 @@ declare function dts-document:selectElementOrRange(
                 or dts-document:isAlwaysPreservedSelection($candidateSelection))
                 and (node-name($candidateSelection[1]) eq QName("http://www.tei-c.org/ns/1.0", "pb"))
             ) then
-                let $nextPb := ($candidateSelection[1]/following::tei:pb)[1]
-                let $pb1 := $candidateSelection[1]/@xml:id
-                let $pb2 := 
-                    if ($nextPb) then
-                        $nextPb/@xml:id
-                    else
-                        ''
-                let $commonAncestorID :=
-                    if ($nextPb) then
-                        ($candidateSelection[1]/ancestor-or-self::*[. intersect $nextPb/ancestor-or-self::*])[last()]/@xml:id
-                    else
-                        ($candidateSelection[1]/ancestor-or-self::*[. intersect (($document//text())[last()])/ancestor-or-self::*])[last()]/@xml:id
-                let $reduced :=
-                    transform:transform($document, doc('../xslt/reduceToPageById.xsl'),
-                        <parameters>
-                            <param name="pb1_id" value="{$pb1}"/>
-                            <param name="pb2_id" value="{$pb2}"/>
-                        </parameters>
-                    )
-                return
-                    $reduced/descendant-or-self::*[@xml:id = $commonAncestorID]/*
+                dts-document:selectTEIPages($document, $candidateSelection, ())
             else if (
                 $candidateSelection and
                 (dts-document:isInCitationTree($candidateSelection, $citationTree)
