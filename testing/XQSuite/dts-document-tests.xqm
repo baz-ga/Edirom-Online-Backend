@@ -516,6 +516,28 @@ declare
     %test:arg("lang", "de")
     %test:assertXPath("/Q{http://www.tei-c.org/ns/1.0}TEI[@xml:id='test-tei-document']//Q{https://w3id.org/dts/api#}wrapper//Q{http://www.tei-c.org/ns/1.0}div[@xml:id='test-div-2']/Q{http://www.tei-c.org/ns/1.0}pb[@xml:id='pb-3']")
     %test:assertXPath("/Q{http://www.tei-c.org/ns/1.0}TEI[@xml:id='test-tei-document']//Q{https://w3id.org/dts/api#}wrapper//Q{http://www.tei-c.org/ns/1.0}div[@xml:id='test-div-3']//Q{http://www.tei-c.org/ns/1.0}p[@rend='footer']")
+    (: retieve range of tei pages :)
+    %test:arg("resource", "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/tei-document.xml")
+    %test:arg("ref")
+    %test:arg("start", "pb-1")
+    %test:arg("end", "pb-2")
+    %test:arg("tree", "paginationStructure")
+    %test:arg("mediaType", "application/xml")
+    %test:arg("lang", "de")
+    %test:assertXPath("/Q{http://www.tei-c.org/ns/1.0}TEI[@xml:id='test-tei-document']//Q{https://w3id.org/dts/api#}wrapper/Q{http://www.tei-c.org/ns/1.0}pb[@xml:id='pb-1']")
+    %test:assertXPath("/Q{http://www.tei-c.org/ns/1.0}TEI[@xml:id='test-tei-document']//Q{https://w3id.org/dts/api#}wrapper/Q{http://www.tei-c.org/ns/1.0}div[@xml:id='test-div-1']")
+    %test:assertXPath("/Q{http://www.tei-c.org/ns/1.0}TEI[@xml:id='test-tei-document']//Q{https://w3id.org/dts/api#}wrapper/Q{http://www.tei-c.org/ns/1.0}div[@xml:id='test-div-1']/Q{http://www.tei-c.org/ns/1.0}pb[@xml:id='pb-2']")
+    (: retrieve range of tei pages starting in the middle of div and ending with last pb :)
+    %test:arg("resource", "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/tei-document.xml")
+    %test:arg("ref")
+    %test:arg("start", "pb-2")
+    %test:arg("end", "pb-3")
+    %test:arg("tree", "paginationStructure")
+    %test:arg("mediaType", "application/xml")
+    %test:arg("lang", "de")
+    %test:assertXPath("/Q{http://www.tei-c.org/ns/1.0}TEI[@xml:id='test-tei-document']//Q{https://w3id.org/dts/api#}wrapper//Q{http://www.tei-c.org/ns/1.0}div[@xml:id='test-div-1']/Q{http://www.tei-c.org/ns/1.0}pb[@xml:id='pb-2']")
+    %test:assertXPath("/Q{http://www.tei-c.org/ns/1.0}TEI[@xml:id='test-tei-document']//Q{https://w3id.org/dts/api#}wrapper//Q{http://www.tei-c.org/ns/1.0}div[@xml:id='test-div-2']/Q{http://www.tei-c.org/ns/1.0}pb[@xml:id='pb-3']")
+    %test:assertXPath("/Q{http://www.tei-c.org/ns/1.0}TEI[@xml:id='test-tei-document']//Q{https://w3id.org/dts/api#}wrapper//Q{http://www.tei-c.org/ns/1.0}div[@xml:id='test-div-3']//Q{http://www.tei-c.org/ns/1.0}p[@rend='footer']")
     (: retrieve teiHeader by ref :)
     %test:arg("resource", "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/tei-document.xml")
     %test:arg("ref", "teiHeader")
@@ -553,6 +575,15 @@ declare
     %test:arg("mediaType", "application/xml")
     %test:arg("lang")
     %test:assertError("errors:InvalidParametersError")
+    (: ask both for non-existing ref mei :)
+    %test:arg("resource", "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/mei-score.xml")
+    %test:arg("ref", "foo")
+    %test:arg("start")
+    %test:arg("end")
+    %test:arg("tree", "musicStructure")
+    %test:arg("mediaType", "application/xml")
+    %test:arg("lang")
+    %test:assertError("errors:NotFoundError")
     (: ask both for ref and start/end tei :)
     %test:arg("resource", "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/tei-document.xml")
     %test:arg("ref", "test-div-1")
@@ -622,7 +653,7 @@ declare
     %test:arg("mediaType", "application/xml")
     %test:arg("lang", "de")
     %test:assertEmpty
-    function ddt:test-document-elements-not-in-tei-pages(
+    function ddt:test-document-elements-not-in-tei-page(
         $resource as xs:string,
         $ref as xs:string?,
         $start as xs:string?,
@@ -638,6 +669,34 @@ declare
         let $document :=
             dts-document:document($resource, $ref, $start, $end, $tree, $mediaType, $html-parameters)
         return ($document//tei:p[@xml:id = "not-in-p2-1"], $document//tei:p[@xml:id = "not-in-p2-2"])
+    };
+
+declare
+    (: retrieve tei page starting in the middle of div :)
+    %test:arg("resource", "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/tei-document.xml")
+    %test:arg("ref")
+    %test:arg("start", "pb-2")
+    %test:arg("end", "pb-3")
+    %test:arg("tree", "paginationStructure")
+    %test:arg("mediaType", "application/xml")
+    %test:arg("lang", "de")
+    %test:assertEmpty
+    function ddt:test-document-elements-not-in-tei-page-range(
+        $resource as xs:string,
+        $ref as xs:string?,
+        $start as xs:string?,
+        $end as xs:string?,
+        $tree as xs:string?,
+        $mediaType as xs:string?,
+        $lang as xs:string?
+    ) { 
+        let $html-parameters := map {
+            "lang": if ($lang) then $lang else "de",
+            "idPrefix": ""
+        }
+        let $document :=
+            dts-document:document($resource, $ref, $start, $end, $tree, $mediaType, $html-parameters)
+        return $document//tei:p[@xml:id = "not-in-p2-1"]
     };
 
 (: TODO test with differen html parameters, e.g. idPrefix :)
