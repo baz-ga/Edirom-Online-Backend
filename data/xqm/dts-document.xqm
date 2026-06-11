@@ -203,7 +203,7 @@ declare function dts-document:matchesCitationStructure(
         and (every $node in $elements satisfies node-name($node) eq $matchName)
 };
 
-declare function dts-document:selectElementOrRange(
+declare function dts-document:selectAndWrap(
     $document as node(),
     $ref as xs:string?,
     $start as xs:string?,
@@ -444,7 +444,7 @@ declare function dts-document:document(
             else if (not($ref) and not($start) and not($end)) then
                 $document/*
             else if ($namespace eq "mei" or $namespace eq "tei") then
-                dts-document:selectElementOrRange($document, $ref, $start, $end, $citationTree)                    
+                dts-document:selectAndWrap($document, $ref, $start, $end, $citationTree)                    
             else
                 error($errors:UNSUPPORTED_DOCUMENT_FORMAT, "The format of the requested document is not supported. Namespace: " || $namespace )
         
