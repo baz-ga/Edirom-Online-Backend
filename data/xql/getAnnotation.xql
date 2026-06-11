@@ -28,15 +28,53 @@ declare option output:method "xhtml";
 
 (: VARIABLE DECLARATIONS =================================================== :)
 
-declare variable $imageWidth := 600;
-
+declare variable $lang := eutil:getSetLanguage(());
 declare variable $edition := request:get-parameter('edition', '');
+declare variable $uri := request:get-parameter('uri', '');
+declare variable $docUri := substring-before($uri, '#');
+declare variable $internalId := substring-after($uri, '#');
+declare variable $doc := eutil:getDoc($docUri);
+declare variable $annot := $doc/id($internalId);
+declare variable $annotMap := annotation:toJSON($annot, $edition);
+declare variable $priorityLabel := switch (map:get($annotMap, 'priority'))
+     case ""
+         return
+             ()
+     default return
+         eutil:getLanguageString('ediromPriority', ());
+         (:eutil:getLanguageString('view.window.AnnotationView_ediromPriority', (), $lang):)
+         
+declare variable $categoriesLabel :=
+    switch (map:get($annotMap, 'categories'))
+        case 0 return ()
+             eutil:getLanguageString('ediromCategory', ())
+         (:let $categoriesLabel :=
+    if (count($categories) gt 1) then
+        eutil:getLanguageString('view.window.AnnotationView_ediromCategories', (), $lang)
+    else
+        eutil:getLanguageString('view.window.AnnotationView_ediromCategory', (), $lang):)
 
+declare variable $imageWidth := 600;
 declare variable $imageserver := edition:getPreference('image_server', $edition);
-
 declare variable $imageBasePath := edition:getPreference('image_prefix', $edition);
 
-declare variable $lang := eutil:getSetLanguage(());
+declare variable $participants := annotation:getParticipants($annot);
+
+declare variable $sources := doc:getDocumentsLabelsAsArray($participants, $edition);
+
+declare variable $sourcesLabel :=
+    if (count($sources) gt 1) then
+        eutil:getLanguageString('view.window.AnnotationView_Sources', (), $lang)
+    else
+        eutil:getLanguageString('view.window.AnnotationView_Source', (), $lang);
+
+declare variable $siglaLabel :=
+    if (count(map:get($annotMap, 'sigla')) gt 1) then
+        eutil:getLanguageString('view.window.AnnotationView_Sigla', (), $lang)
+    else
+        eutil:getLanguageString('view.window.AnnotationView_Siglum', (), $lang);
+
+declare variable $annotIDlabel := eutil:getLanguageString('view.window.AnnotationView_AnnotationID', (), $lang);
 
 (: FUNCTION DECLARATIONS =================================================== :)
 
@@ -57,64 +95,6 @@ declare function local:getZone($elem as element()) as element()? {
         ($elem)
 };
 
-(:~
- :  This function gets the label of a given Annotation Priority
- :
- :  @param $annot the annot with a priority to look for
- :  @return the label for the Priority, or, if this fails, $uri
- :)
-declare function local:getPriority($annot as node()) {
-
-    let $uri := $annot/mei:ptr[@type eq 'priority']/string(@target)
-
-    let $doc := if (starts-with($uri, '#')) then (
-        $annot/root()
-    ) else (
-        doc(substring-before($uri, '#'))
-    )
-
-    let $locID := substring-after($uri, '#')
-
-    let $elem := $doc/id($locID)
-
-    return
-        if ($elem/mei:name) then
-            (normalize-space(eutil:getLocalizedName($elem, $lang)))
-        else
-            ($locID)
-};
-
-(:~
- :  This function gets a string representing all Annotation categories
- :
- :  @param $annot the annot with categories to look for
- :  @return the string of annotation labels, or, if one of them fails, the respecitve $uri
- :)
-declare function local:getCategories($annot as node()) {
-
-    let $uris := tokenize($annot/mei:ptr[@type eq 'categories']/string(@target), ' ')
-
-    let $string :=
-        for $uri in $uris
-        let $doc :=
-            if (starts-with($uri, '#')) then (
-                $annot/root()
-            ) else (
-                doc(substring-before($uri, '#'))
-            )
-
-    let $locID := substring-after($uri, '#')
-
-    let $elem := $doc/id($locID)
-
-    return
-        if ($elem/mei:name) then
-            (eutil:getLocalizedName($elem, $lang))
-        else
-            ($locID)
-    return
-        $string
-};
 
 (: TODO: in Modul auslagern :)
 (:~
@@ -307,51 +287,6 @@ declare function local:calculatePreviewsForTip($participants as xs:string*) {
         $test
 };
 
-let $uri := request:get-parameter('uri', '')
-
-let $target := request:get-parameter('target', '')
-
-let $docUri := substring-before($uri, '#')
-
-let $internalId := substring-after($uri, '#')
-
-let $doc := doc($docUri)
-
-let $annot := $doc/id($internalId)
-
-let $participants := annotation:getParticipants($annot)
-
-let $priority := local:getPriority($annot)
-
-let $priorityLabel := eutil:getLanguageString('view.window.AnnotationView_ediromPriority', (), $lang)
-
-let $categories := local:getCategories($annot)
-
-let $categoriesLabel :=
-    if (count($categories) gt 1) then
-        eutil:getLanguageString('view.window.AnnotationView_ediromCategories', (), $lang)
-    else
-        eutil:getLanguageString('view.window.AnnotationView_ediromCategory', (), $lang)
-
-let $sources := doc:getDocumentsLabelsAsArray($participants, $edition)
-
-let $sourcesLabel :=
-    if (count($sources) gt 1) then
-        eutil:getLanguageString('view.window.AnnotationView_Sources', (), $lang)
-    else
-        eutil:getLanguageString('view.window.AnnotationView_Source', (), $lang)
-
-let $sigla := source:getSiglaAsArray($participants)
-
-let $siglaLabel :=
-    if (count($sigla) gt 1) then            
-        eutil:getLanguageString('view.window.AnnotationView_Sigla', (), $lang)
-    else
-        eutil:getLanguageString('view.window.AnnotationView_Siglum', (), $lang)
-
-let $annotIDlabel := eutil:getLanguageString('view.window.AnnotationView_AnnotationID', (), $lang)
-
-return
     if ($target eq 'view') then (
         <div class="annotView">
             <div class="metaBox">
