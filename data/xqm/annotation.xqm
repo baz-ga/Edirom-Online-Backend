@@ -356,7 +356,7 @@ declare function annotation:get-referenced-category-elements(
  : @param $anno element() The Annotation to process
  : @return sequence of xs:string, might be an empty sequence
  :)
-declare function annotation:getParticipants($anno as element()) as xs:string* {
+declare function annotation:getParticipants($anno as element()) as xs:anyURI* {
 
     let $plistTokens := tokenize(normalize-space($anno/@plist), ' ')
     let $uris := distinct-values(for $uri in $plistTokens return tokenize($uri,'#')[1])
