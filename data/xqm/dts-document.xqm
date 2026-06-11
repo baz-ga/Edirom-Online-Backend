@@ -175,21 +175,21 @@ declare function dts-document:copySelectedChildren(
 };
 
 declare function dts-document:isInCitationTree(
-    $selection as element()*,
+    $elements as element()*,
     $citationTree as element(citeStructure)*
 ) as xs:boolean {
     some $citeStructure in ($citationTree, $citationTree//citeStructure)
-        satisfies dts-document:matchesCitationStructure($selection, $citeStructure)
+        satisfies dts-document:matchesCitationStructure($elements, $citeStructure)
 };
 
 declare function dts-document:isAlwaysPreservedSelection(
-    $selection as element()*
+    $elements as element()*
 ) as xs:boolean {
-    every $node in $selection satisfies node-name($node) = $dts-document:alwaysPreserveMEIElements or node-name($node) = $dts-document:alwaysPreserveTEIElements
+    every $node in $elements satisfies node-name($node) = $dts-document:alwaysPreserveMEIElements or node-name($node) = $dts-document:alwaysPreserveTEIElements
 };
 
 declare function dts-document:matchesCitationStructure(
-    $selection as element()*,
+    $elements as element()*,
     $citeStructure as element(citeStructure)
 ) as xs:boolean {
     let $match := normalize-space($citeStructure/@match)
@@ -200,7 +200,7 @@ declare function dts-document:matchesCitationStructure(
             resolve-QName($match, $citeStructure)
     return
         exists($matchName)
-        and (every $node in $selection satisfies node-name($node) eq $matchName)
+        and (every $node in $elements satisfies node-name($node) eq $matchName)
 };
 
 declare function dts-document:selectElementOrRange(
@@ -213,40 +213,65 @@ declare function dts-document:selectElementOrRange(
     let $selection :=
         if ($ref) then
             let $idSelection := $document/id($ref)
-            return
+            let $candidateSelection :=
                 if ($idSelection) then
                     $idSelection
                 else
                     $document//*[local-name() = $ref]
+            return
+                if (
+                    $candidateSelection and
+                    (dts-document:isInCitationTree($candidateSelection, $citationTree)
+                    or dts-document:isAlwaysPreservedSelection($candidateSelection))
+                ) then
+                    $candidateSelection
+                else if ($candidateSelection) then
+                    error($errors:INVALID_PARAMETERS, "The selected citable units are not part of the citation tree specified for this document and are not part of the always preserved elements." || "Citation tree: " || string-join($citationTree/@xml:id, ", ") || ". Selected element: " || node-name($candidateSelection[1]) || ", Selected element @xml:id: " || $candidateSelection[1]/@xml:id)
+                else
+                    error($errors:NOT_FOUND, "The specified citable units did not match any element in the document.")
         else if ($start and $end) then
-            let $startNode := $document/id($start)
-            let $endNode := $document/id($end)
-                return
-                    if ($start eq $end and $startNode) then
-                        $startNode
-                    else if ($startNode and $endNode and not($startNode/parent::* is $endNode/parent::*)) then
-                        error($errors:INVALID_PARAMETERS, "The start and end citable units must have the same parent.")
-                    else if ($startNode and $endNode and ($startNode << $endNode)) then
-                        (
-                            $startNode,
-                            $startNode/following-sibling::*[
-                                . << $endNode
-                            ],
-                            $endNode
-                        )
-                    else
-                        error($errors:INVALID_PARAMETERS, "Invalid start and end citable units. Start: " || $start || ", End: " || $end)
+            let $candidateStartNode := $document/id($start)
+            let $candidateEndNode := $document/id($end)
+            let $startNode :=
+                if (
+                    $candidateStartNode and
+                    dts-document:isInCitationTree($candidateStartNode, $citationTree)
+                ) then
+                    $candidateStartNode
+                else if ($candidateStartNode) then
+                    error($errors:INVALID_PARAMETERS, "The selected start citable unit is not part of the citation tree specified for this document." || "Citation tree: " || string-join($citationTree/@xml:id, ", ") || ". Selected element: " || node-name($candidateStartNode[1]) || ", Selected element @xml:id: " || $candidateStartNode[1]/@xml:id)
+                else
+                    error($errors:NOT_FOUND, "The specified start citable unit did not match any element in the document.")
+            let $endNode :=
+                if (
+                    $candidateEndNode and
+                    dts-document:isInCitationTree($candidateEndNode, $citationTree)
+                ) then
+                    $candidateEndNode
+                else if ($candidateEndNode) then
+                    error($errors:INVALID_PARAMETERS, "The selected end citable unit is not part of the citation tree specified for this document." || "Citation tree: " || string-join($citationTree/@xml:id, ", ") || ". Selected element: " || node-name($candidateEndNode[1]) || ", Selected element @xml:id: " || $candidateEndNode[1]/@xml:id)
+                else
+                    error($errors:NOT_FOUND, "The specified end citable unit did not match any element in the document.")
+            
+            return
+                if ($start eq $end) then
+                    $startNode
+                else if (not($startNode/parent::* is $endNode/parent::*)) then
+                    error($errors:INVALID_PARAMETERS, "The start and end citable units must have the same parent.")
+                else if ($startNode << $endNode) then
+                    (
+                        $startNode,
+                        $startNode/following-sibling::*[
+                            . << $endNode
+                        ],
+                        $endNode
+                    )
+                else
+                    error($errors:INVALID_PARAMETERS, "Invalid start and end citable units. The start node must come before the end node. Start: " || $start || ", End: " || $end)
         else
             ()
     return
-        if (
-            $selection
-            and (
-                dts-document:isInCitationTree($selection, $citationTree)
-                or dts-document:isAlwaysPreservedSelection($selection)
-            )
-            and node-name($selection[1]) eq QName("http://www.tei-c.org/ns/1.0", "pb") 
-        ) then
+        if (node-name($selection[1]) eq QName("http://www.tei-c.org/ns/1.0", "pb")) then
             let $nextPb := ($selection[1]/following::tei:pb)[1]
             let $pb1 := $selection[1]/@xml:id
             let $pb2 := 
@@ -268,18 +293,8 @@ declare function dts-document:selectElementOrRange(
                 )
             return
                 dts-document:wrapSelection($reduced/descendant-or-self::*[@xml:id = $commonAncestorID]/*, $document)
-        else if (
-            $selection
-            and (
-                dts-document:isInCitationTree($selection, $citationTree)
-                or dts-document:isAlwaysPreservedSelection($selection)
-            )
-        ) then
-            dts-document:wrapSelection($selection, $document)
-        else if ($selection) then
-            error($errors:INVALID_PARAMETERS, "The selected citable units are not part of the citation tree specified for this document." || "Citation tree: " || string-join($citationTree/@xml:id, ", ") || ". Selected element: " || node-name($selection[1]) || ", Selected element @xml:id: " || $selection[1]/@xml:id)
         else
-            error($errors:NOT_FOUND, "The specified citable units did not match any element in the document.")
+            dts-document:wrapSelection($selection, $document)
 };
 
 declare function dts-document:isMediaTypeCompatible(
