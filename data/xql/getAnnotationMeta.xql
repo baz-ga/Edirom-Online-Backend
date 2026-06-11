@@ -31,18 +31,59 @@ declare namespace request = "http://exist-db.org/xquery/request";
 declare option output:method "xhtml";
 declare option output:media-type "text/html";
 
-let $lang := request:get-parameter('lang', '')
-let $edition := request:get-parameter('edition', '')
-let $uri := request:get-parameter('uri', '')
-let $docUri := substring-before($uri, '#')
-let $internalId := substring-after($uri, '#')
+(: VARIABLE DECLARATIONS =================================================== :)
 
-let $doc := doc($docUri)
-let $annot := $doc/id($internalId)
-
-let $participants := annotation:getParticipants($annot)
-
+declare variable $lang := eutil:getSetLanguage(());
+declare variable $edition := request:get-parameter('edition', '');
+declare variable $uri := request:get-parameter('uri', '');
+declare variable $docUri := substring-before($uri, '#');
+declare variable $internalId := substring-after($uri, '#');
+declare variable $doc := eutil:getDoc($docUri);
+declare variable $annot := $doc/id($internalId);
+declare variable $annotMap := annotation:toJSON($annot, $edition);
+declare variable $priorityLabel := switch (map:get($annotMap, 'priority'))
+     case ""
+         return
+             ()
+     default return
+         eutil:getLanguageString('ediromPriority', ());
+         
+declare variable $categoriesLabel :=
+    switch (map:get($annotMap, 'categories'))
+        case 0 return ()
+        case 1 return
+             eutil:getLanguageString('ediromCategory', ())
+        default return
+         eutil:getLanguageString('ediromCategory_multiple', ());
+         
 (: TODO deprecate below categories and priorities fields with Edirom-Online-API 2.0.0 :)
+declare variable  $hideLegacyFields := xs:boolean(edition:getPreference('annotation_hide_legacy_fields', $edition));
+
+(: TODO switch to array return in annotation:toJSON() to avoid loal array :)
+declare variable $taxonomiesArray := annotation:get-referenced-categories-as-taxonomy-array($annot, $doc, $lang);
+
+declare variable $annotIDlabel := eutil:getLanguageString('view.window.AnnotationView_AnnotationID', (), $lang);
+
+declare variable $participants := annotation:getParticipants($annot);
+
+declare variable $sources := doc:getDocumentsLabelsAsArray($participants, $edition);
+
+declare variable $sourcesLabel :=
+    if (count($sources) gt 1) then
+        eutil:getLanguageString('view.window.AnnotationView_Sources', (), $lang)
+    else
+        eutil:getLanguageString('view.window.AnnotationView_Source', (), $lang);
+
+declare variable $siglaLabel :=
+    if (count(map:get($annotMap, 'sigla')) gt 1) then
+        eutil:getLanguageString('view.window.AnnotationView_Sigla', (), $lang)
+    else
+        eutil:getLanguageString('view.window.AnnotationView_Siglum', (), $lang);
+        
+(: QUERY BODY ============================================================== :)
+
+(:
+(\: TODO deprecate below categories and priorities fields with Edirom-Online-API 2.0.0 :\)
 let $hideLegacyFields := xs:boolean(edition:getPreference('annotation_hide_legacy_fields', $edition))
 let $priority := annotation:getPriorityLabel($annot)
 let $priorityLabel := switch ($priority)
@@ -50,18 +91,18 @@ let $priorityLabel := switch ($priority)
          return
              ()
      default return
-         eutil:getLanguageString('view.window.AnnotationView_ediromPriority', ())
+         eutil:getLanguageString('ediromPriority', ())
 
  let $categories := annotation:get-category-labels-as-sequence($annot)
  let $categoriesLabel :=
     switch (count($categories))
         case 0 return ()
         case 1 return
-             eutil:getLanguageString('view.window.AnnotationView_ediromCategory', ())
+             eutil:getLanguageString('ediromCategory', ())
         default return
-         eutil:getLanguageString('view.window.AnnotationView_ediromCategories', ())
+         eutil:getLanguageString('ediromCategory_multiple', ())
 
-(: TODO deprecate above categories and priorities fields with Edirom-Online-API 2.0.0 :)
+(\: TODO deprecate above categories and priorities fields with Edirom-Online-API 2.0.0 :\)
 
 let $taxonomiesArray := annotation:get-referenced-categories-as-taxonomy-array($annot, $doc, $lang)
 
@@ -74,43 +115,47 @@ let $siglaLabel := switch (count($sigla))
     default return
         eutil:getLanguageString('view.window.AnnotationView_Sources', ())
 
-let $annotIDlabel := eutil:getLanguageString('view.window.AnnotationView_AnnotationID', ())
+let $annotIDlabel := eutil:getLanguageString('view.window.AnnotationView_AnnotationID', ()):)
 
-return
+(: QUERY BODY ============================================================== :)
 
-    <div class="annotView">
-        <div class="metaBox">
-            {
-                if($hideLegacyFields) then
-                    ()
-                else (
-                    (: TODO deprecate priority field with Edirom-Online-API 2.0.0 :)
-                    <div class="property priority">
-                        <div class="key">{$priorityLabel}</div>
-                        <div class="value">{$priority}</div>
-                    </div>,
-                    (: TODO deprecate categories field with Edirom-Online-API 2.0.0 :)
-                    <div class="property categories">
-                        <div class="key">{$categoriesLabel}</div>
-                        <div class="value">{string-join($categories, ', ')}</div>
-                    </div>
-                )
-            }
-            {
-                for $t in $taxonomiesArray?*
-                return
-                    <div class="property taxonomy-{$t('id')}">
-                        <div class="key">{(eutil:getLanguageString(edition:getLanguageFileURI($edition, $lang), $t('label'), (), $lang), $t('label'))[1]}</div>
-                        <div class="value">{string-join($t('items')?*?name, ', ')}</div>
-                    </div>
-            }
-            <div class="property sourceSiglums">
-                <div class="key">{$siglaLabel}</div>
-                <div class="value">{string-join($sigla, ', ')}</div>
-            </div>
-            <div class="property annotID">
-                <div class="key">{$annotIDlabel}</div>
-                <div class="value">{$internalId}</div>
-            </div>
+<div class="annotView">
+    <div class="metaBox">
+        {
+            if($hideLegacyFields) then
+                ()
+            else (
+                (: TODO deprecate priority field with Edirom-Online-API 2.0.0 :)
+                <div class="property priority">
+                    <div class="key">{$priorityLabel}</div>
+                    <div class="value">{map:get($annotMap, 'priority')}</div>
+                </div>,
+                (: TODO deprecate categories field with Edirom-Online-API 2.0.0 :)
+                <div class="property categories">
+                    <div class="key">{$categoriesLabel}</div>
+                    <div class="value">{string-join(map:get($annotMap, 'categories'), ', ')}</div>
+                </div>
+            )
+        }
+        {
+            for $t in $taxonomiesArray?*
+            return
+                <div class="property taxonomy-{$t('id')}">
+                    <div class="key">{(eutil:getLanguageString(edition:getLanguageFileURI($edition, $lang), $t('label'), (), $lang), $t('label'))[1]}</div>
+                    <div class="value">{string-join($t('items')?*?name, ', ')}</div>
+                </div>
+        }
+        <div class="property sourceLabel">
+            <div class="key">{$sourcesLabel}</div>
+            <div class="value">{string-join($sources, ', ')}</div>
+        </div>
+        <div class="property sourceSiglums">
+            <div class="key">{$siglaLabel}</div>
+            <div class="value">{string-join(map:get($annotMap, 'sigla'), ', ')}</div>
+        </div>
+        <div class="property annotID">
+            <div class="key">{$annotIDlabel}</div>
+            <div class="value">{$internalId}</div>
         </div>
     </div>
+</div>

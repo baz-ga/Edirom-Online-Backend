@@ -47,7 +47,10 @@ declare variable $priorityLabel := switch (map:get($annotMap, 'priority'))
 declare variable $categoriesLabel :=
     switch (map:get($annotMap, 'categories'))
         case 0 return ()
+        case 1 return
              eutil:getLanguageString('ediromCategory', ())
+        default return
+         eutil:getLanguageString('ediromCategory_multiple', ());
          (:let $categoriesLabel :=
     if (count($categories) gt 1) then
         eutil:getLanguageString('view.window.AnnotationView_ediromCategories', (), $lang)
@@ -57,6 +60,7 @@ declare variable $categoriesLabel :=
 declare variable $imageWidth := 600;
 declare variable $imageserver := edition:getPreference('image_server', $edition);
 declare variable $imageBasePath := edition:getPreference('image_prefix', $edition);
+declare variable $target := request:get-parameter('target', '');
 
 declare variable $participants := annotation:getParticipants($annot);
 
@@ -146,7 +150,7 @@ declare function local:getImageAreaPathForTips($basePath as xs:string, $zone as 
     let $ww := $w div $imgWidth
     let $wh := $h div $imgHeight
 
-    let $cut_path := substring-before($imagePath, '.')
+    let $cut_path := replace(substring-before($imagePath, '.'), '/', '!')
 
     let $im_path := if ($imageserver = 'digilib')
     then
@@ -287,116 +291,118 @@ declare function local:calculatePreviewsForTip($participants as xs:string*) {
         $test
 };
 
-    if ($target eq 'view') then (
-        <div class="annotView">
-            <div class="metaBox">
-                <div class="property priority">
-                    <div class="key">{$priorityLabel}</div>
-                    <div class="value">{$priority}</div>
-                </div>
-                <div class="property categories">
-                    <div class="key">{$categoriesLabel}</div>
-                    <div class="value">{string-join($categories, ', ')}</div>
-                </div>
-                <!--<div class="property sourceLabel">
-                    <div class="key">{$sourcesLabel}</div>
-                    <div class="value">{string-join($sources, ', ')}</div>
-                </div>-->
-                <div class="property sourceSiglums">
-                    <div class="key">{$siglaLabel}</div>
-                    <div class="value">{string-join($sigla, ', ')}</div>
-                </div>
-                <div class="property annotID">
-                    <div class="key">{$annotIDlabel}</div>
-                    <div class="value">{$internalId}</div>
-                </div>
+(: QUERY BODY ============================================================== :)
+
+if ($target eq 'view') then (
+    <div class="annotView">
+        <div class="metaBox">
+            <div class="property priority">
+                <div class="key">{$priorityLabel}</div>
+                <div class="value">{map:get($annotMap, 'priority')}</div>
             </div>
-            <div class="contentBox">
-                <h1>{eutil:getLocalizedName($annot, $lang)}</h1>
-                {annotation:getContent($annot, '', $edition)}
+            <div class="property categories">
+                <div class="key">{$categoriesLabel}</div>
+                <div class="value">{string-join(map:get($annotMap, 'categories'), ', ')}</div>
             </div>
-
-            <!-- <div class="previewArea">
-                {
-
-                 if($imageserver = 'digilib') then (
-                    for $pUri in tokenize($annot/string(@plist), ' ')
-                    let $elem := doc(substring-before($pUri, '#'))/id(substring-after($pUri, '#'))
-                    let $zone := local:getZone($elem)
-        				return
-                        <div class="previewItem">
-                            <div class="imgBox">
-                                <img src="{local:getImageAreaPath($imageBasePath, $zone, $imageWidth)}" class="previewImg" onclick="loadLink('{$pUri}')" />
-                                <input type="hidden" class="previewImgData" value="{concat('{width:', number($zone/@lrx) - number($zone/@ulx), ', height:', number($zone/@lry) - number($zone/@uly), '}')}"/>
-                            </div>
-                            <div class="label">{eutil:getLanguageString('Bar', (), $lang)}</div>
-                        </div>
-
-                  )
-            	else(
-                	for $pUri in tokenize($annot/string(@plist), ' ')
-                    let $elem := doc(substring-before($pUri, '#'))/id(substring-after($pUri, '#'))
-                    let $zone := local:getZone($elem)
-                	return
-    				<div class="previewItem">
-                            <div class="imgBox">
-                                <img src="{local:getImageAreaPath($imageBasePath, $zone, $imageWidth)}" class="previewImg" onclick="loadLink('{$pUri}')" />
-                                <input type="hidden" class="previewImgData" value="{concat('{width:', number($zone/@lrx) - number($zone/@ulx), ', height:', number($zone/@lry) - number($zone/@uly), '}')}"/>
-                            </div>
-                            <div class="label">{concat(eutil:getLanguageString('Bar', (), $lang), ' ', $elem/@n)}</div>
-                        </div>
-    				)
-
-                }
-            </div>-->
-
+            <div class="property sourceLabel">
+                <div class="key">{$sourcesLabel}</div>
+                <div class="value">{string-join($sources, ', ')}</div>
+            </div>
+            <div class="property sourceSiglums">
+                <div class="key">{$siglaLabel}</div>
+                <div class="value">{string-join(map:get($annotMap, 'sigla'), ', ')}</div>
+            </div>
+            <div class="property annotID">
+                <div class="key">{$annotIDlabel}</div>
+                <div class="value">{$internalId}</div>
+            </div>
         </div>
-    ) else (
-        <div class="annotTip">
-            <div class="metaBox">
-                <div class="property priority">
-                    <div class="key">{$priorityLabel}</div>
-                    <div class="value">{$priority}</div>
-                </div>
-                <div class="property categories">
-                    <div class="key">{$categoriesLabel}</div>
-                    <div class="value">{string-join($categories, ', ')}</div>
-                </div>
-                <!--<div class="property sourceLabel">
-                    <div class="key">{$sourcesLabel}</div>
-                    <div class="value">{string-join($sources, ', ')}</div>
-                </div>-->
-                <div class="property sourceSiglums">
-                    <div class="key">{$siglaLabel}</div>
-                    <div class="value">{string-join($sigla, ', ')}</div>
-                </div>
-                <div class="property annotID">
-                    <div class="key">{$annotIDlabel}</div>
-                    <div class="value">{$internalId}</div>
-                </div>
-            </div>
-            <div class="contentBox">
-                {
-                    for $a in (if($annot/mei:annot) then ($annot/mei:annot) else ($annot))
-                        
-                        let $title := eutil:getLocalizedTitle($annot, $lang, '')
+        <div class="contentBox">
+            <h1>{eutil:getLocalizedName($annot, $lang)}</h1>
+            {annotation:getContent($annot, '', $edition)}
+        </div>
 
-                        return (
-                            if ($title!='') then (
-                                <h1>{$title}</h1>,
-                                annotation:getContent($a, '', $edition)
-                            ) else (
-                                annotation:getContent($a, '', $edition)
-                            )
+        <!--<div class="previewArea">
+            {
+
+             if($imageserver = 'digilib') then (
+                for $pUri in tokenize($annot/string(@plist), ' ')
+                let $elem := doc(substring-before($pUri, '#'))/id(substring-after($pUri, '#'))
+                let $zone := local:getZone($elem)
+                    return
+                    <div class="previewItem">
+                        <div class="imgBox">
+                            <img src="{local:getImageAreaPath($imageBasePath, $zone, $imageWidth)}" class="previewImg" onclick="loadLink('{$pUri}')" />
+                            <input type="hidden" class="previewImgData" value="{concat('{width:', number($zone/@lrx) - number($zone/@ulx), ', height:', number($zone/@lry) - number($zone/@uly), '}')}"/>
+                        </div>
+                        <div class="label">{eutil:getLanguageString('Bar', (), $lang)}</div>
+                    </div>
+
+              )
+            else(
+                for $pUri in tokenize($annot/string(@plist), ' ')
+                let $elem := doc(substring-before($pUri, '#'))/id(substring-after($pUri, '#'))
+                let $zone := local:getZone($elem)
+                return
+                <div class="previewItem">
+                        <div class="imgBox">
+                            <img src="{local:getImageAreaPath($imageBasePath, $zone, $imageWidth)}" class="previewImg" onclick="loadLink('{$pUri}')" />
+                            <input type="hidden" class="previewImgData" value="{concat('{width:', number($zone/@lrx) - number($zone/@ulx), ', height:', number($zone/@lry) - number($zone/@uly), '}')}"/>
+                        </div>
+                        <div class="label">{concat(eutil:getLanguageString('Bar', (), $lang), ' ', $elem/@n)}</div>
+                    </div>
+                )
+
+            }
+        </div>-->
+
+    </div>
+) else (
+    <div class="annotTip">
+        <div class="metaBox">
+            <div class="property priority">
+                <div class="key">{$priorityLabel}</div>
+                <div class="value">{map:get($annotMap, 'priority')}</div>
+            </div>
+            <div class="property categories">
+                <div class="key">{$categoriesLabel}</div>
+                <div class="value">{string-join(map:get($annotMap, 'categories'), ', ')}</div>
+            </div>
+            <div class="property sourceLabel">
+                <div class="key">{$sourcesLabel}</div>
+                <div class="value">{string-join($sources, ', ')}</div>
+            </div>
+            <div class="property sourceSiglums">
+                <div class="key">{$siglaLabel}</div>
+                <div class="value">{string-join(map:get($annotMap, 'sigla'), ', ')}</div>
+            </div>
+            <div class="property annotID">
+                <div class="key">{$annotIDlabel}</div>
+                <div class="value">{$internalId}</div>
+            </div>
+        </div>
+        <div class="contentBox">
+            {
+                for $a in (if($annot/mei:annot) then ($annot/mei:annot) else ($annot))
+                    
+                    let $title := eutil:getLocalizedTitle($annot, $lang, '')
+
+                    return (
+                        if ($title!='') then (
+                            <h1>{$title}</h1>,
+                            annotation:getContent($a, '', $edition)
+                        ) else (
+                            annotation:getContent($a, '', $edition)
                         )
-                }
-            </div>
-            <!-- <div class="previewArea">
-                {
-                    local:calculatePreviewsForTip(tokenize($annot/string(@plist),' '))
-
-                }
-            </div>-->
+                    )
+            }
         </div>
+        <div class="previewArea">
+            {
+                local:calculatePreviewsForTip(tokenize($annot/string(@plist),' '))
 
-        )
+            }
+        </div>
+    </div>
+
+    )

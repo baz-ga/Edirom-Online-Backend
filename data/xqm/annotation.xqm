@@ -68,8 +68,10 @@ declare function annotation:annotationsToJSON($uri as xs:string, $edition as xs:
  :)
 declare function annotation:toJSON($anno as element(), $edition as xs:string) as map(*) {
 
+    (: TODO typecheck if annotation has @type="editorialComment" :)
+
     let $id := $anno/string(@xml:id)
-    let $lang := request:get-parameter('lang', '')
+    let $lang := eutil:getSetLanguage(())
     let $title := eutil:getLocalizedName($anno, $lang)
 
     let $doc := $anno/root()
@@ -79,11 +81,11 @@ declare function annotation:toJSON($anno as element(), $edition as xs:string) as
     let $sigla := source:getSiglaAsArray($participantURIs)
 
     let $classes := annotation:get-class-idrefs-as-sequence($anno)
-    let $catURIs := distinct-values((tokenize(replace($anno/mei:ptr[@type = 'categories']/@target,'#',''),' '), $classes[contains(.,'annotation.category.')]))
+    let $catURIs := distinct-values((tokenize(replace($anno/mei:ptr[@type = 'categories']/@target,'#',''),' '), $classes[contains(.,'annotation.category.')])) (: TODO make this more precise, e.g. by typeckecking classes reference mei:category or deprecate with Edirom-Online-API 2.0.0 :)
 
     let $classes-elements :=
         for $uri in $classes
-        return $doc/id($uri)
+        return $doc/id($uri) (: TODO escape strict document context, e.g., conservatievly to edition-context as a first step :)
 
     let $cats :=
         string-join(
@@ -250,10 +252,10 @@ declare function annotation:getPriorityLabel($anno) as xs:string* {
  :)
 declare function annotation:get-category-labels-as-sequence($anno as element()) as xs:string* {
 
-    let $doc := $anno/root()
+    let $doc := $anno/root() (: TODO escape the local definition and allow definitions in other files probably (as first step) limited to the edition context :)
 
-    let $classes := tokenize(replace(normalize-space($anno/@class),'#',''),' ')
-    let $catURIs := distinct-values((tokenize(replace($anno/mei:ptr[@type = 'categories']/@target,'#',''),' '), $classes[contains(.,'annotation.category.')]))
+    let $classes := tokenize(replace(normalize-space($anno/@class),'#',''),' ') (: TODO use  annotation:get-class-idrefs-as-sequence :)
+    let $catURIs := distinct-values((tokenize(replace($anno/mei:ptr[@type = 'categories']/@target,'#',''),' '), $classes[contains(.,'annotation.category.')])) (: TODO improve weak selector  for identifying annotation classification refs :)
 
     let $cats :=
         for $u in $catURIs
@@ -335,12 +337,13 @@ declare function annotation:get-referenced-category-elements(
  : @param $anno element() The Annotation to process
  : @return sequence of xs:anyURI, might be an empty sequence
  :)
-declare function annotation:getParticipants($anno as element()) as xs:anyURI* {
+declare function annotation:getParticipants($anno as element()) as xs:string* {
 
     let $plistTokens := tokenize(normalize-space($anno/@plist), ' ')
     let $uris := distinct-values(for $uri in $plistTokens return tokenize($uri,'#')[1])
 
     return $uris
+    
 };
 
 (:~
