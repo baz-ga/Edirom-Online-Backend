@@ -16,7 +16,7 @@ module namespace annotation = "http://www.edirom.de/xquery/annotation";
 
 import module namespace edition="http://www.edirom.de/xquery/edition" at "edition.xqm";
 import module namespace eutil="http://www.edirom.de/xquery/eutil" at "eutil.xqm";
-
+import module namespace source="http://www.edirom.de/xquery/source" at "source.xqm";
 import module namespace taxonomy="http://www.edirom.de/xquery/taxonomy" at "taxonomy.xqm";
 
 (: NAMESPACE DECLARATIONS ================================================== :)
@@ -76,20 +76,7 @@ declare function annotation:toJSON($anno as element(), $edition as xs:string) as
     let $prio := annotation:getPriorityLabel($anno)
     let $participantURIs := annotation:getParticipants($anno)
 
-    let $sigla :=
-        for $p in distinct-values($participantURIs)
-        let $pDoc :=
-            if(doc-available($p)) then
-                (doc($p))
-            else
-                edition:collection($edition)/id($p)/root()
-        return
-            if ($pDoc//mei:sourceDesc/mei:source/mei:identifier[@type = 'siglum']) then
-                ($pDoc//mei:sourceDesc/mei:source/mei:identifier[@type = 'siglum']/text())
-            else if ($pDoc//mei:manifestationList/mei:manifestation/mei:identifier[@type = 'siglum']) then
-                ($pDoc//mei:manifestationList/mei:manifestation/mei:identifier[@type = 'siglum']/text())
-            else
-                ($pDoc//mei:title[@type = 'siglum']/text())
+    let $sigla := source:getSiglaAsArray($participantURIs)
 
     let $classes := annotation:get-class-idrefs-as-sequence($anno)
     let $catURIs := distinct-values((tokenize(replace($anno/mei:ptr[@type = 'categories']/@target,'#',''),' '), $classes[contains(.,'annotation.category.')]))

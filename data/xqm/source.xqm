@@ -137,7 +137,14 @@ declare function source:getSiglum($source as xs:string) as xs:string? {
     let $doc := eutil:getDoc($source)
     let $elems := $doc//mei:*[@type eq 'siglum']
     return
-        if(exists($elems))
-        then $elems[1] => normalize-space()
+        if(exists($elems)) then
+            if ($doc//mei:sourceDesc/mei:source/mei:identifier[@type = 'siglum']) then
+                ($doc//mei:sourceDesc/mei:source/mei:identifier[@type = 'siglum']/text())
+            else if ($doc//mei:manifestationList/mei:manifestation/mei:identifier[@type = 'siglum']) then
+                ($doc//mei:manifestationList/mei:manifestation/mei:identifier[@type = 'siglum']/text())
+            else if($doc//mei:title[@type = 'siglum']/text()) then
+                ($doc//mei:title[@type = 'siglum']/text())
+            else
+                $elems[1] => normalize-space()
         else ()
 };
