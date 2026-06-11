@@ -74,18 +74,10 @@ declare function annotation:toJSON($anno as element(), $edition as xs:string) as
 
     let $doc := $anno/root()
     let $prio := annotation:getPriorityLabel($anno)
-    let $pList.raw := distinct-values(tokenize(normalize-space($anno/@plist), ' '))
-
-    let $pList :=
-        for $p in $pList.raw
-        return
-            if ( contains($p, '#')) then
-                (substring-before($p, '#'))
-            else
-                $p
+    let $participantURIs := annotation:getParticipants($anno)
 
     let $sigla :=
-        for $p in distinct-values($pList)
+        for $p in distinct-values($participantURIs)
         let $pDoc :=
             if(doc-available($p)) then
                 (doc($p))
