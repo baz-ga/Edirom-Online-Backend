@@ -381,11 +381,16 @@ declare
     function ddt:test-selectTEIPages-returns-something() {
         let $document := doc("xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/tei-document.xml")
         let $document := eutil:add-xml-ids($document)
-        let $result := dts-document:selectTEIPages(
-            $document,
-            $document//tei:pb[@xml:id = "pb-1"],
-            ()
-        )
+        let $result :=
+        <result>
+        {
+            dts-document:selectTEIPages(
+                $document,
+                $document//tei:pb[@xml:id = "pb-1"],
+                ()
+            )
+        }
+        </result>
         return
             $result
 };
@@ -395,11 +400,16 @@ declare
     function ddt:test-selectTEIPages-with-endPb-selects-page-range() as xs:boolean {
         let $document := doc("xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/tei-document.xml")
         let $document := eutil:add-xml-ids($document)
-        let $result := dts-document:selectTEIPages(
-            $document,
-            $document//tei:pb[@xml:id = "pb-1"],
-            $document//tei:pb[@xml:id = "pb-2"]
-        )
+        let $result := 
+        <result>
+        {
+            dts-document:selectTEIPages(
+                $document,
+                $document//tei:pb[@xml:id = "pb-1"],
+                $document//tei:pb[@xml:id = "pb-2"]
+            )
+        }
+        </result>
         return
             exists($result//tei:pb[@xml:id = "pb-1"])
             and exists($result//tei:pb[@xml:id = "pb-2"])
