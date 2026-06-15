@@ -228,7 +228,19 @@ as map ( * )
 };
 
 (:~
- : Returns labels of a mei:taxonomy or mei:category element for given languages.
+ : Returns labels of a mei:taxonomy or mei:category element for given languages. If the
+ : submitted $languages array is empty an array for all available localizations will be
+ : returnd with an additional label for the 'und' (undefined) localization. The value for this
+ : will be determined in the following order:
+ :     1. child mei:label without @xml:lang (only possible on mei:category)
+ :     2. @label
+ :     3. first of all mei:label child elements (only possible on mei:category)
+ :     4. the element's own @xml:id
+ :     5. the parent taxonomy's identifying string
+ :
+ : Note: a mei:category that is referenced from mei:annot/@class is always resolvable by id()
+ : and therefore always carries an @xml:id, so step 5 is only ever reached for a mei:taxonomy
+ : that lacks its own @xml:id.
  :
  : @param $element a mei:taxonomy or mei:category element
  : @param $languages array(*) an array with language codes
@@ -257,12 +269,16 @@ as map ( * )
                         map:entry(
                             "und",
                             ( (: pick the first of the following :)
-                                (: the first mei:label without @xml:lang :)
+                                (: the first mei:label without @xml:lang – only available in mei:catgory :)
                                 ( $element/mei:label[ not (@xml:lang ) ] )[ 1 ],
                                 (: the @label :)
                                 $element/@label,
-                                (: the first mei:label :)
-                                ( $element/mei:label )[ 1 ] )[ 1 ] => normalize-space() )
+                                (: the first mei:label – only available in mei :category :)
+                                ( $element/mei:label )[ 1 ],
+                                (: the element’s xml:id :)
+                                $element/@xml:id,
+                                (: the parent taxonomy’s identifying string :)
+                                taxonomy:get-parent-taxonomy-identifying-string( $element ) )[ 1 ] => normalize-space() )
                     default return
                       map:entry( $lang, $element/mei:label[ @xml:lang = $lang ] => normalize-space() )
         )
