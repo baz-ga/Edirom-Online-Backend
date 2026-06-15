@@ -196,8 +196,8 @@ declare function local:getSourceParticipants($participants as xs:string*, $doc a
                 'page': $page,
                 'source': $sourceLabel,
                 'siglum': $siglum,
-                'digilibBaseParams': $digilibBaseParams,
-                'digilibSizeParams': $digilibSizeParams,
+                'digilibBaseParams': encode-for-uri($digilibBaseParams),
+                'digilibSizeParams': encode-for-uri($digilibSizeParams),
                 'hiddenData': $hiddenData,
                 'content': '',
                 'linkUri': $linkUri
