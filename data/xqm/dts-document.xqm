@@ -292,10 +292,13 @@ declare function dts-document:selectElementOrRange(
                 error($errors:NOT_FOUND, "The specified end citable unit did not match any element in the document.")
         
         return
-            if ($start eq $end) then
+            if (node-name($startNode[1]) eq QName("http://www.tei-c.org/ns/1.0", "pb")
+            and node-name($endNode[1]) eq QName("http://www.tei-c.org/ns/1.0", "pb")) then
+                dts-document:selectTEIPages($document, $startNode, $endNode)
+            else if ($start eq $end) then
                 $startNode
             else if (not($startNode/parent::* is $endNode/parent::*)) then
-                error($errors:INVALID_PARAMETERS, "The start and end citable units must have the same parent.")
+                error($errors:INVALID_PARAMETERS, "The start and end citable units must have the same parent, or be page break elements." || "Selected start element: " || node-name($startNode[1]) || ", Selected start element @xml:id: " || $startNode[1]/@xml:id || ". Selected end element: " || node-name($endNode[1]) || ", Selected end element @xml:id: " || $endNode[1]/@xml:id)
             else if ($startNode << $endNode) then
                 (
                     $startNode,

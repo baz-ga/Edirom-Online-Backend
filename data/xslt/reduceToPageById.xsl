@@ -45,16 +45,22 @@
     </xsl:template>
     <xsl:template match="tei:pb">
         <xsl:choose>
-    <xsl:when test="@xml:id eq $pb1_id">
-    <xsl:copy>
+            <xsl:when test="@xml:id eq $pb1_id">
+                <xsl:copy>
                     <xsl:apply-templates select="@*"/>
-        </xsl:copy>
-    </xsl:when>
+                </xsl:copy>
+            </xsl:when>
             <xsl:when test="@xml:id eq $pb2_id and @rend eq '-'">
-            <xsl:copy>
+                <xsl:copy>
                     <xsl:apply-templates select="@* except @xml:id"/>
-        </xsl:copy>
-    </xsl:when>
+                </xsl:copy>
+            </xsl:when>
+            <xsl:when test="not(@xml:id = $pb2_id)">
+                <xsl:copy>
+                    <xsl:apply-templates select="@* | node()"/>
+                </xsl:copy>
+            </xsl:when>
+            <xsl:otherwise/>
         </xsl:choose>
     </xsl:template>
     <xsl:template match="@*">
