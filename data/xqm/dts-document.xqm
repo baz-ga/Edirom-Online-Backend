@@ -208,7 +208,11 @@ declare function dts-document:selectTEIPages(
     $startPb as node()*,
     $endPb as node()*
 ) as node()* {
-    let $nextPb := ($startPb/following::tei:pb)[1]
+    let $nextPb := 
+        if ($endPb) then
+            ($endPb/following::tei:pb)[1]
+        else
+            ($startPb/following::tei:pb)[1]
     let $pb1 := $startPb/@xml:id
     let $pb2 := 
         if ($nextPb) then

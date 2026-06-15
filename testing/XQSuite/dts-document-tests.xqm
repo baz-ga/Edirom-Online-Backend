@@ -3,6 +3,7 @@ xquery version "3.1";
 module namespace ddt = "http://www.edirom.de/xquery/xqsuite/dts-document-tests";
 
 import module namespace dts-document = "http://www.edirom.de/api/dts-document" at "xmldb:exist:///db/apps/Edirom-Online-Backend/data/xqm/dts-document.xqm";
+import module namespace eutil = "http://www.edirom.de/xquery/eutil" at "xmldb:exist:///db/apps/Edirom-Online-Backend/data/xqm/eutil.xqm";
 
 declare namespace dts="https://w3id.org/dts/api#";
 declare namespace mei="http://www.music-encoding.org/ns/mei";
@@ -373,6 +374,57 @@ declare
                 <music><body><mdiv xml:id="selection-1"/></body></music>
             </mei>
         return dts-document:selectAndWrap(document { $documentRoot }, "missing", (), (), ddt:citationTree("musicStructure"))
+};
+
+declare
+    %test:assertTrue
+    function ddt:test-selectTEIPages-returns-something() {
+        let $document := doc("xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/tei-document.xml")
+        let $document := eutil:add-xml-ids($document)
+        let $result := dts-document:selectTEIPages(
+            $document,
+            $document//tei:pb[@xml:id = "pb-1"],
+            ()
+        )
+        return
+            $result
+};
+
+declare
+    %test:assertTrue
+    function ddt:test-selectTEIPages-with-endPb-selects-page-range() as xs:boolean {
+        let $document := doc("xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/tei-document.xml")
+        let $document := eutil:add-xml-ids($document)
+        let $result := dts-document:selectTEIPages(
+            $document,
+            $document//tei:pb[@xml:id = "pb-1"],
+            $document//tei:pb[@xml:id = "pb-2"]
+        )
+        return
+            exists($result//tei:pb[@xml:id = "pb-1"])
+            and exists($result//tei:pb[@xml:id = "pb-2"])
+            and exists($result//tei:p[@xml:id = "yes-in-p2-1"])
+            and empty($result//tei:div[@xml:id = "test-div-3"])
+            and empty($result//tei:p[@xml:id = "not-in-p2-2"])
+};
+
+declare
+    %test:assertTrue
+    function ddt:test-selectTEIPages-with-empty-endPb-selects-current-page() as xs:boolean {
+        let $document := doc("xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/tei-document.xml")
+        let $document := eutil:add-xml-ids($document)
+        let $result := dts-document:selectTEIPages(
+            $document,
+            $document//tei:pb[@xml:id = "pb-2"],
+            ()
+        )
+        return
+            exists($result//tei:pb[@xml:id = "pb-2"])
+            and exists($result//tei:p[@xml:id = "yes-in-p2-1"])
+            and empty($result//tei:pb[@xml:id = "pb-1"])
+            and empty($result//tei:pb[@xml:id = "pb-3"])
+            and empty($result//tei:p[@xml:id = "not-in-p2-1"])
+            and empty($result//tei:p[@xml:id = "not-in-p2-2"])
 };
 
 declare

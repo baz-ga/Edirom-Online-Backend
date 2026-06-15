@@ -161,7 +161,7 @@
          </div>
          <div xml:id="test-div-2">
             <head>Vorbemerkung zur neuen Version der Edirom des Klarinettenquintetts 2008</head>
-            <p> Die vorliegende Version der digitalen Edition des Klarinettenquintetts dient vor
+            <p xml:id="yes-in-p2-1"> Die vorliegende Version der digitalen Edition des Klarinettenquintetts dient vor
                allem der Demonstration der veränderten Techniken dieser nun auf allen gängigen
                Plattformen lauffähigen Edirom-Version. Inhaltlich wurde die im Jahr 2005 publizierte
                digitale Version mit nur wenigen, unwesentlichen Änderungen 1:1 umgesetzt. Dabei
