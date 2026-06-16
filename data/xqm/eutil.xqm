@@ -259,6 +259,32 @@ declare %private function eutil:isInternalDbUri($uri as xs:string) as xs:boolean
 };
 
 (:~
+ : Resolves a single reference token to its target element(s) by id, honouring cross-file references.
+ :
+ : - a fragment-only token (#someId), or a bare id without '#', resolves within $node's own document
+ : - a token with a base part (other.xml#someId, http://…#someId) is resolved against $node's
+ :   base URI and loaded via eutil:getDoc (empty if that document is unavailable)
+ :
+ : @param $node      a node from the referencing document (provides the base URI / root)
+ : @param $reference a single, space-free reference token, with or without a leading '#'
+ : @return the element(s) the reference's id resolves to (empty if unresolvable)
+ :)
+declare function eutil:get-referenced-element($node as node(), $reference as xs:string) as element()* {
+    let $reference := normalize-space($reference)
+    return
+        if($reference eq "") then ()
+        else
+            let $hasHash := contains($reference, '#')
+            let $base    := if($hasHash) then substring-before($reference, '#') else ''
+            let $id      := if($hasHash) then substring-after($reference, '#') else $reference
+            let $doc :=
+                if($base eq '')
+                then $node/root()
+                else eutil:getDoc(xs:string(resolve-uri($base, base-uri($node))))
+            return $doc/id($id)
+};
+
+(:~
  : Returns a part's label (translated if available)
  :
  : @author Dennis Ried
