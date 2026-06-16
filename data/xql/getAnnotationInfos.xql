@@ -92,7 +92,10 @@ declare function local:getDistinctPriorities($annots as element()*) as xs:string
 let $mei := eutil:getDoc($uri)
 let $editionCollection := edition:collection($edition)
 let $annots :=
-    $editionCollection//mei:annot[@type = 'editorialComment'][matches(@plist, $uri)]
+    $editionCollection//mei:annot[@type = 'editorialComment'][
+        some $p in tokenize(normalize-space(@plist), '\s+')
+        satisfies (if (contains($p, '#')) then substring-before($p, '#') else $p) = $uri
+    ]
     | $mei//mei:annot[@type = 'editorialComment']
 
 (: NOTE: the deprecated categories/priorities fields below still resolve their label elements
