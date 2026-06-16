@@ -105,9 +105,14 @@ return
                         <div class="key">{
                             (: mirror the frontend: a real @label is used as-is, otherwise the
                                identifier is looked up in the locale files (id as last resort) :)
-                            if ($t('label') != $t('id'))
-                            then $t('label')
-                            else (eutil:getLanguageString(edition:getLanguageFileURI($edition, $lang), $t('id'), (), $lang), $t('id'))[1]
+                            if ($t('label') != $t('id')) then
+                                $t('label')
+                            else switch(array:size($t('items')))
+                                case 1 return
+                                    (eutil:getLanguageString(edition:getLanguageFileURI($edition, $lang), $t('id'), (), $lang), $t('id'))[1]
+                                default return
+                                    (: for more than one item try to fetch plural label, fallback to singular, then to id :)
+                                    (eutil:getLanguageString(edition:getLanguageFileURI($edition, $lang), $t('id') || '_multiple', (), $lang), eutil:getLanguageString(edition:getLanguageFileURI($edition, $lang)), $t('id'))[1]
                         }</div>
                         <div class="value">{string-join($t('items')?*?name, ', ')}</div>
                     </div>
