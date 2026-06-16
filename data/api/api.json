@@ -103,6 +103,18 @@
 								"Klarinettenquintett text 1": {
 									"summary": "Klarinettenquintett text 1",
 									"value": "xmldb:exist:///db/apps/weber-klarinettenquintett-eol-emeritus/texts/text-1.xml"
+								},
+								"Test MEI score": {
+									"summary": "Test MEI score",
+									"value": "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/mei-score.xml"
+								},
+								"Test MEI facsimilie": {
+									"summary": "Test MEI facsimile",
+									"value": "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/mei-facsimile.xml"
+								},
+								"Test TEI": {
+									"summary": "Test TEI",
+									"value": "xmldb:exist:///db/apps/Edirom-Online-Backend/testing/XQSuite/data/tei-document.xml"
 								}
 							}
 						},
@@ -162,6 +174,18 @@
 								"teiHeader": {
 									"summary": "teiHeader",
 									"value": "teiHeader"
+								},
+								"Page Break 1": {
+									"summary": "Page Break 1",
+									"value": "pb-1"
+								},
+								"Page Break 2": {
+									"summary": "Page Break 2",
+									"value": "pb-2"
+								},
+								"Page Break 3": {
+									"summary": "Page Break 3",
+									"value": "pb-3"
 								}
 							}
 						},
@@ -213,6 +237,18 @@
 								"Measure source 1 - 2": {
 									"summary": "Measure source 1 - 2",
 									"value": "bar-2002"
+								},
+								"Page Break 1": {
+									"summary": "Page Break 1",
+									"value": "pb-1"
+								},
+								"Page Break 2": {
+									"summary": "Page Break 2",
+									"value": "pb-2"
+								},
+								"Page Break 3": {
+									"summary": "Page Break 3",
+									"value": "pb-3"
 								}
 							}
 						},
@@ -264,6 +300,18 @@
 								"Measure source 1 - 20": {
 									"summary": "Measure source 1 - 20",
 									"value": "bar-20020"
+								},
+								"Page Break 1": {
+									"summary": "Page Break 1",
+									"value": "pb-1"
+								},
+								"Page Break 2": {
+									"summary": "Page Break 2",
+									"value": "pb-2"
+								},
+								"Page Break 3": {
+									"summary": "Page Break 3",
+									"value": "pb-3"
 								}
 							}
 						},
