@@ -73,6 +73,9 @@
             <p>Hello this is a paragraph</p>
             <p rend="footer">Hello this is a paragraph<lb/>Hello this is a paragraph<lb/>Hello this is a paragraph</p>
          </div>
+         <div xml:id="test-div-4">
+            <p>I am the only paragraph in the fourth div, that does not have a heading.</p>
+         </div>
       </body>
    </text>
 </TEI>

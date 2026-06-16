@@ -420,7 +420,7 @@
 							"name": "autoHead",
 							"in": "query",
 							"required": false,
-							"description": "Whether to automatically generate a header for the returned document",
+							"description": "hether to  construct a heading for &lt;div&gt; elements with no &lt;head&gt; - by default, not.",
 							"schema": {
 								"type": "string",
 								"enum": [
