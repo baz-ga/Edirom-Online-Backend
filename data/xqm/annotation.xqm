@@ -73,7 +73,6 @@ declare function annotation:toJSON($anno as element(), $edition as xs:string) as
     let $lang := request:get-parameter('lang', '')
     let $title := eutil:getLocalizedName($anno, $lang)
 
-    let $doc := $anno/root()
     let $prio := annotation:getPriorityLabel($anno)
     let $pList.raw := distinct-values(tokenize(normalize-space($anno/@plist), ' '))
 
@@ -106,18 +105,12 @@ declare function annotation:toJSON($anno as element(), $edition as xs:string) as
             else
                 ($pDoc//mei:title[@type = 'siglum']/text())
 
-    let $classes := annotation:get-class-idrefs-as-sequence($anno)
-    let $catURIs := distinct-values((tokenize(replace($anno/mei:ptr[@type = 'categories']/@target,'#',''),' '), $classes[contains(.,'annotation.category.')]))
-
+    (: resolve all @class references (cross-file aware) for the taxonomy fields below :)
     let $classes-elements :=
-        for $uri in $classes
-        return $doc/id($uri)
+        for $token in tokenize(normalize-space($anno/@class), ' ')[. != '']
+        return eutil:get-referenced-element($anno, $token)
 
-    let $cats :=
-        string-join(
-            for $u in $catURIs
-            return annotation:get-category-label-localized($doc/id($u))
-         , ', ')
+    let $cats := string-join(annotation:get-category-labels-as-sequence($anno), ', ')
 
     let $count := count($anno/preceding::mei:annot[@type = 'editorialComment']) + 1
 
@@ -240,15 +233,8 @@ declare function annotation:getPriorityLabel($anno) as xs:string* {
 
             let $labels :=
                 for $uri in $classBasedUri
-                let $doc :=
-                    if(starts-with($uri,'#')) then
-                        $anno/root()
-                    else
-                        eutil:getDoc(substring-before($uri,'#'))
-                
-                let $prioElem := $doc/id(replace($uri,'#',''))
-                let $label := annotation:get-category-label-localized($prioElem)
-                return $label
+                let $prioElem := eutil:get-referenced-element($anno, $uri)
+                return annotation:get-category-label-localized($prioElem)
 
             return string-join($labels,', ')
         )
@@ -273,16 +259,12 @@ declare function annotation:getPriorityLabel($anno) as xs:string* {
  :)
 declare function annotation:get-category-labels-as-sequence($anno as element()) as xs:string* {
 
-    let $doc := $anno/root()
+    let $ptrTokens := tokenize(normalize-space($anno/mei:ptr[@type = 'categories']/@target), ' ')
+    let $classTokens := tokenize(normalize-space($anno/@class), ' ')[contains(., 'annotation.category.')]
+    let $catTokens := distinct-values(($ptrTokens, $classTokens)[. != ''])
 
-    let $classes := tokenize(replace(normalize-space($anno/@class),'#',''),' ')
-    let $catURIs := distinct-values((tokenize(replace($anno/mei:ptr[@type = 'categories']/@target,'#',''),' '), $classes[contains(.,'annotation.category.')]))
-
-    let $cats :=
-        for $u in $catURIs
-        return annotation:get-category-label-localized($doc/id($u))
-
-    return $cats
+    for $token in $catTokens
+    return annotation:get-category-label-localized(eutil:get-referenced-element($anno, $token))
 };
 
 (:~
@@ -293,11 +275,8 @@ declare function annotation:get-category-labels-as-sequence($anno as element()) 
  :)
 declare function annotation:get-class-labels-as-sequence($anno as element(mei:annot)) as xs:string* {
 
-    (: TODO fix strict binding to definitions in the same file :)
-    let $doc := $anno/root()
-
-    for $classIDREF in annotation:get-class-idrefs-as-sequence($anno)
-    return annotation:get-category-label-localized($doc/id($classIDREF))
+    for $token in tokenize(normalize-space($anno/@class), ' ')[. != '']
+    return annotation:get-category-label-localized(eutil:get-referenced-element($anno, $token))
 
 };
 
@@ -317,11 +296,8 @@ declare function annotation:get-class-idrefs-as-sequence($anno as element(mei:an
 (:~
  : Returns the mei:category elements referenced by @class on the given annotations.
  :
- : Each URI token in @class is resolved to its target document before searching:
- : - fragment-only refs (#someId) resolve to the annotation's own document
- : - relative or absolute refs (taxonomy.xml#someId, http://…#someId) are resolved
- :   against the annotation's base URI and opened with doc()
- : Tokens without '#' (bare external URIs without a fragment) are silently ignored.
+ : Each @class token is resolved via eutil:get-referenced-element (cross-file aware) and
+ : kept only if it resolves to a mei:category.
  :
  : @param $annots  One or more mei:annot elements to inspect
  : @return         Distinct mei:category elements, deduplicated by @xml:id (first occurrence wins)
@@ -333,19 +309,7 @@ declare function annotation:get-referenced-category-elements(
     let $raw :=
         for $annot in $annots
         for $token in tokenize(normalize-space($annot/@class), ' ')[contains(., '#')]
-
-        let $base-part := substring-before($token, '#')
-
-        let $id        := substring-after($token, '#')
-
-        let $doc :=
-            if ($base-part = '')
-            then $annot/root()
-            else
-                let $resolved := resolve-uri($base-part, base-uri($annot))
-                return if (doc-available($resolved)) then doc($resolved) else ()
-
-        return $doc//mei:category[@xml:id = $id]
+        return eutil:get-referenced-element($annot, $token)[self::mei:category]
 
     for $id in distinct-values($raw/@xml:id)
 
