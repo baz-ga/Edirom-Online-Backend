@@ -68,9 +68,8 @@ declare function api:document ($request as map(*)) {
         "autoHead": if (exists($request?parameters?autoHead)) then xs:string($request?parameters?autoHead) else "false",
         "autoToc": if (exists($request?parameters?autoToc)) then xs:string($request?parameters?autoToc) else "false",
         "tocDepth": if (exists($request?parameters?tocDepth)) then xs:string($request?parameters?tocDepth) else "1",
-        "footnoteBackLinks": if (exists($request?parameters?footnoteBackLinks)) then xs:string($request?parameters?footnoteBackLinks) else "true",
-        "numberHeadings": if (exists($request?parameters?numberHeadings)) then xs:string($request?parameters?numberHeadings) else "false",
-        'pageLayout' : if (exists($request?parameters?pageLayout)) then xs:string($request?parameters?pageLayout) else "CSS"
+        "footnoteBackLink": if (exists($request?parameters?footnoteBackLink)) then xs:string($request?parameters?footnoteBackLink) else "true",
+        "numberHeadings": if (exists($request?parameters?numberHeadings)) then xs:string($request?parameters?numberHeadings) else "false"
     }
     return
         try {

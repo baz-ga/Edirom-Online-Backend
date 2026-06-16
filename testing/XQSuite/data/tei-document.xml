@@ -32,11 +32,15 @@
          <pb n="1" xml:id="pb-1"/>
          <head>This is the main header</head>
          <div xml:id="test-div-1">
+            <head>This is the header of the first div</head>
             <p>Hello this is a paragraph</p>
             <p xml:id="not-in-p2-1">This paragraph is not in page 2<emph>Hello this is a paragraph</emph>Hello this is a paragraph<hi rendition="#italic">Hello this is a paragraph</hi>Hello this is a paragraph<hi rendition="#italic">Hello this is a paragraph</hi>Hello this is a paragraph</p>
                <pb n="2" xml:id="pb-2"/>
             <p>Hello this is a paragraph<emph>Hello this is a paragraph</emph>Hello this is a paragraph</p>
-            <p>Hello this is a paragraph<emph>Hello this is a paragraph</emph>Hello this is a paragraph</p>
+            <div xml:id="nested-div">
+               <head>This is the header of the nested div (inside the first div)</head>
+            </div>
+            <p>Hello this is a paragraph<note xml:id="note-1" place="foot">I am a footnote</note><emph>Hello this is a paragraph</emph>Hello this is a paragraph</p>
             <p>Hello this is a paragraph</p>
             <p>Hello this is a paragraph<emph>Hello this is a paragraph</emph>Hello this is a paragraph<hi rend="#superscript">Hello this is a paragraph</hi>Hello this is a paragraph</p>
             <p>Hello this is a paragraph</p>

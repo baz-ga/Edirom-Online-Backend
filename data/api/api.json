@@ -489,10 +489,10 @@
 							}
 						},
 						{
-							"name": "footnoteBackLinks",
+							"name": "footnoteBackLink",
 							"in": "query",
 							"required": false,
-							"description": "Whether to add back links from footnotes to their references in the text, only used if autoHead is true",
+							"description": "Whether to add back links from footnotes to their references in the text",
 							"schema": {
 								"type": "string",
 								"enum": [
@@ -516,7 +516,7 @@
 							"name": "numberHeadings",
 							"in": "query",
 							"required": false,
-							"description": "Whether to add numbers to headings in the returned document, only used if autoHead is true",
+							"description": "Whether to add numbers to headings in the returned document, both in the text and in the TOC.",
 							"schema": {
 								"type": "string",
 								"enum": [
@@ -533,22 +533,6 @@
 								"False": {
 									"summary": "False",
 									"value": "false"
-								}
-							}
-						},
-						{
-							"name": "pageLayout",
-							"in": "query",
-							"required": false,
-							"description": "Whether to use CSS or SVG for page layout in the returned document, only used if autoHead is true",
-							"schema": {
-								"type": "string",
-								"default": "CSS"
-							},
-							"examples": {
-								"CSS": {
-									"summary": "CSS",
-									"value": "CSS"
 								}
 							}
 						}

@@ -376,9 +376,8 @@ declare function dts-document:transformTEIToHTML(
     let $autoHead := if (map:contains($htmlParameters, "autoHead")) then map:get($htmlParameters, "autoHead") else "false"
     let $autoToc := if (map:contains($htmlParameters, "autoToc")) then map:get($htmlParameters, "autoToc") else "false"
     let $tocDepth := if (map:contains($htmlParameters, "tocDepth")) then map:get($htmlParameters, "tocDepth") else "1"
-    let $footnoteBackLinks := if (map:contains($htmlParameters, "footnoteBackLinks")) then map:get($htmlParameters, "footnoteBackLinks") else "true"
+    let $footnoteBackLink := if (map:contains($htmlParameters, "footnoteBackLink")) then map:get($htmlParameters, "footnoteBackLink") else "true"
     let $numberHeadings := if (map:contains($htmlParameters, "numberHeadings")) then map:get($htmlParameters, "numberHeadings") else "false"
-    let $pageLayout := if (map:contains($htmlParameters, "pageLayout")) then map:get($htmlParameters, "pageLayout") else "CSS"
 
     let $contextPath := request:get-scheme()|| "://" || request:get-server-name() || ":" || request:get-server-port() || request:get-context-path()
 
@@ -405,14 +404,14 @@ declare function dts-document:transformTEIToHTML(
         <param name="docUri" value="{$resource}"/>,
         <param name="contextPath" value="{$contextPath}"/>,
         <param name="base" value="{$xsltBase}"/>,
-        <param name="footnoteBackLink" value="{$footnoteBackLinks}"/>,
+        <param name="footnoteBackLink" value="{$footnoteBackLink}"/>,
         (: parameters for the TEI Stylesheets :)
         <param name="autoHead" value="{$autoHead}"/>,
         <param name="autoToc" value="{$autoToc}"/>,
         <param name="tocDepth" value="{$tocDepth}"/>,
         <param name="documentationLanguage" value="{$lang}"/>,
         <param name="numberHeadings" value="{$numberHeadings}"/>,
-        <param name="pageLayout" value="{$pageLayout}"/>
+        <param name="pageLayout" value="CSS"/>
     )
 
     let $doc := transform:transform($doc, doc($xsl), <parameters>{$params}</parameters>)
