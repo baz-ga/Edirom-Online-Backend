@@ -424,17 +424,8 @@ declare function dts-document:transformTEIToHTML(
     )
     let $doc := transform:transform($doc, doc($xsl), <parameters>{$params}</parameters>)
 
-    let $body := $doc//xhtml:body
-
     return
-        element div {
-            for $attribute in $body/@*
-            return
-                $attribute,
-            for $node in $body/node()
-            return
-                $node
-        }
+        $doc
 };
 
 declare function dts-document:document(
