@@ -555,3 +555,45 @@ declare function eutil:joinAndNormalize($strings as xs:string*) as xs:string {
 declare function eutil:joinAndNormalize($strings as xs:string*, $separator as xs:string) as xs:string {
     $strings => string-join($separator) => normalize-space()
 };
+
+(:~
+ : Returns a copy of a document with xml:id attributes added to elements missing one
+ :
+ : @param $doc The document to be processed
+ : @return The copied document with xml:id attributes
+ :)
+declare function eutil:add-xml-ids(
+    $doc as document-node()
+) as document-node() {
+    document {
+        for $node in $doc/node()
+        return eutil:add-xml-id-to-node($node)
+    }
+};
+
+(:~
+ : Returns a copy of a node with xml:id attributes added recursively to elements missing one
+ :
+ : @param $node The node to be processed
+ : @return The copied node sequence with xml:id attributes
+ :)
+declare function eutil:add-xml-id-to-node(
+    $node as node()
+) as node()* {
+    typeswitch($node)
+
+        case element() return
+        element { node-name($node) } {
+            if ($node/@xml:id)
+            then $node/@*
+            else (
+                attribute xml:id { generate-id($node) },
+                $node/@*
+            ),
+            for $child in $node/node()
+                return eutil:add-xml-id-to-node($child)
+        }
+
+        default return
+            $node
+};
