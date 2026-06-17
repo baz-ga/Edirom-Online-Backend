@@ -26,12 +26,11 @@ declare option output:omit-xml-declaration "yes";
 let $lang := eutil:getSetLanguage(())
 let $idPrefix := request:get-parameter('idPrefix', '')
 
-let $doc := eutil:getDoc(concat($eutil:app-root, '/help/help_', $lang, '.xml'))
-let $contextPath := if(starts-with(document-uri($doc), '/db'))
-                    then substring-after(document-uri($doc), '/db')
-                    else document-uri($doc)
-let $contextPath := substring-before($contextPath, concat('help/help_', $lang, '.xml'))
-let $contextPath := request:get-context-path() || $contextPath
+let $base := replace(system:get-module-load-path(), 'embedded-eXist-server', '') (:TODO:)
+
+let $uri := concat('xmldb:exist:///db/apps/Edirom-Online-Backend/help/help_', $lang, '.xml')
+let $doc := eutil:getDoc($uri)
+let $contextPath := request:get-scheme()|| "://" || request:get-server-name() || ":" || request:get-server-port() || request:get-context-path()
 
 let $xsl := eutil:getDoc($eutil:xsltBase || '/edirom_langReplacement.xsl')
 let $doc := 
@@ -49,10 +48,8 @@ let $doc :=
             <param name="base" value="{concat($eutil:xsltBase, '/')}"/>
             <param name="lang" value="{$lang}"/>
             <param name="tocDepth" value="1"/>
-            (: == passing empty value for docUri (XSLT expects xs:anyURI, but ExtJS view does not provide value) -> github#480 == :)
             <param name="contextPath" value="{$contextPath}"/>
-            (: == passing empty value for docUri (XSLT expects xs:anyURI, but ExtJS view does not provide value) -> github#480 == :)
-            <param name="docUri" value="''"/>
+            <param name="docUri" value="{$uri}"/>
         </parameters>
     )
 
