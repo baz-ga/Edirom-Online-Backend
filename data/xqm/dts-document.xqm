@@ -35,7 +35,7 @@ declare variable $dts-document:alwaysPreserveTEIElements as xs:QName* := (
     QName("http://www.tei-c.org/ns/1.0", "teiHeader")
 );
 
-declare variable $dts-document:preserveIfPrecedingSiblindsMEIElements as xs:QName* := (
+declare variable $dts-document:preserveIfPrecedingSiblingsMEIElements as xs:QName* := (
     QName("http://www.music-encoding.org/ns/mei", "scoreDef"),
     QName("http://www.music-encoding.org/ns/mei", "staffGrp"),
     QName("http://www.music-encoding.org/ns/mei", "staffDef"),
@@ -93,7 +93,7 @@ declare function dts-document:matchesNode(
 declare function dts-document:preserveIfPrecedingSiblingNodes(
     $keptNodes as element()*
 ) as element()* {
-    $keptNodes/preceding-sibling::*[node-name(.) = $dts-document:preserveIfPrecedingSiblindsMEIElements]
+    $keptNodes/preceding-sibling::*[node-name(.) = $dts-document:preserveIfPrecedingSiblingsMEIElements]
 };
 
 declare function dts-document:referenceClosure(
