@@ -39,7 +39,7 @@ declare function api:entryPoint ($request as map(*)) {
         "@type": "EntryPoint",
         "collection": concat($base-url, "/api/collection/{?id,page,nav}"),
         "navigation" : concat($base-url, "/api/navigation/{?resource,ref,start,end,down,tree,page}"),
-        "document": concat($base-url, "/api/document/{?resource,ref,start,end,tree,mediaType,lang,idPrefix}")
+        "document": concat($base-url, "/api/document/{?resource,ref,start,end,tree,mediaType,lang,idPrefix,autoHead,autoToc,tocDepth,footnoteBackLink,numberHeadings}")
     }
 };
 
