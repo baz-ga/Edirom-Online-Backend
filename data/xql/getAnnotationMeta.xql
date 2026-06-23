@@ -112,7 +112,9 @@ return
                                     (eutil:getLanguageString(edition:getLanguageFileURI($edition, $lang), $t('id'), (), $lang), $t('id'))[1]
                                 default return
                                     (: for more than one item try to fetch plural label, fallback to singular, then to id :)
-                                    (eutil:getLanguageString(edition:getLanguageFileURI($edition, $lang), $t('id') || '_multiple', (), $lang), eutil:getLanguageString(edition:getLanguageFileURI($edition, $lang)), $t('id'))[1]
+                                    (eutil:getLanguageString(edition:getLanguageFileURI($edition, $lang), $t('id') || '_multiple', (), $lang),
+                                     eutil:getLanguageString(edition:getLanguageFileURI($edition, $lang), $t('id'))
+                                     )[1]
                         }</div>
                         <div class="value">{string-join($t('items')?*?name, ', ')}</div>
                     </div>
