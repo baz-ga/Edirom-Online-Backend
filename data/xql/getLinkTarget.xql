@@ -174,10 +174,24 @@ declare function local:getWindowTitle($doc as document-node()?, $type as xs:stri
         (eutil:getLocalizedTitle($doc//mei:fileDesc/mei:titleStmt[1], $lang))
     
     (: Source / Score  MEI 4 and newer :)
-    else if ($type = 'source' and exists($doc//mei:manifestation/mei:titleStmt)) then
-        (string-join((eutil:getLocalizedTitle(($doc//mei:manifestation)[1]/mei:titleStmt[1], $lang),
-        ($doc//mei:manifestation)[1]//mei:identifier[lower-case(@type) = 'shelfmark'][1]), ' | ')
-        => normalize-space())
+    else if ($type = 'source' and exists($doc//mei:manifestation/mei:titleStmt)) then (
+        string-join((
+            ($doc//mei:manifestation)[1]/mei:identifier[@type='siglum'],
+            string-join((
+                eutil:getLocalizedTitle(($doc//mei:fileDesc/mei:titleStmt)[1], $lang),
+                (for $physLoc in ($doc//mei:manifestation)[1]//mei:physLoc
+                 let $shorthand := $physLoc/mei:identifier[lower-case(@type) = 'shorthand']
+                 return
+                    if( $shorthand ) then
+                        $shorthand
+                    else
+                        string-join(
+                            ($physLoc/mei:repository/mei:name[@type='organisation'],
+                            $physLoc/mei:repository/mei:repository,
+                            $physLoc/mei:repository/mei:identifier[@type = 'shelfmark-item']),
+                            ',')
+                    )
+            ), ' | ')), ': ') => normalize-space())
      
      (: Source / Score  MEI 3 and older :)
     else if ($type = 'source' and exists($doc//mei:source/mei:titleStmt)) then
