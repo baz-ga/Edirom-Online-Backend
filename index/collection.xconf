@@ -21,7 +21,7 @@
         </lucene>
         <range>
             <create qname="@type" type="xs:string"/>
-            <create qname="@plist" type="xs:string"/>
+            <!--<create qname="@plist" type="xs:string"/>-->
             <create qname="@facs" type="xs:string"/>
             <create qname="@n" type="xs:string"/>
             <create qname="@num" type="xs:integer"/>
