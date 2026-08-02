@@ -35,6 +35,7 @@ declare variable $edition := request:get-parameter('edition', '');
 declare variable $imageserver := edition:getPreference('image_server', $edition);
 declare variable $uri := request:get-parameter('uri', '');
 declare variable $imageBasePath := edition:getPreference('image_prefix', $edition);
+declare variable $showNeighbours as xs:boolean := edition:getPreference('annotation_show_neighbour_measures', $edition) = 'true';
 
 (: FUNCTION DECLARATIONS =================================================== :)
 
@@ -120,6 +121,17 @@ declare function local:getTextNotePrecedingContent($elem as element()) as xs:str
  :)
 declare function local:getSourceParticipants($participants as xs:string*, $doc as xs:string) as map(*)* {
 
+    (: local:getCombinations() chains participants by looking forward through the sequence only, so
+       it can group a run of adjacent measures only if the sequence is in document order. An @plist
+       is not required to be ordered, so sort here — before grouping, and before the indices in the
+       combination strings are resolved back to participants further down. :)
+    let $participants :=
+        for $participant in $participants
+        let $elem := local:getElement($participant)
+        order by count($elem/preceding::*)
+        return
+            $participant
+
     (: group participants :)
     let $combs := local:groupParticipants($participants, $doc)
 
@@ -144,8 +156,22 @@ declare function local:getSourceParticipants($participants as xs:string*, $doc a
             return
                 local:getZone($elem)
 
+        (: measures shown as context around the annotated ones; they widen the preview crop and
+           the label, but must not affect the annotation's identity, i.e. neither the grouping of
+           participants into previews nor $linkUri :)
+        let $contextMeasures :=
+            if ($showNeighbours) then
+                (local:getContextMeasures($elems, $zones))
+            else
+                ()
+
+        let $contextZones :=
+            for $contextMeasure in $contextMeasures
+            return
+                local:getZone($contextMeasure)
+
         let $type := local:getType($zones)
-        let $label := local:getItemLabel($elems)
+        let $label := local:getItemLabel($contextMeasures | $elems)
 
         let $mdiv := '' (: TODO if($elem/ancestor-or-self::mei:mdiv) then($elem/ancestor-or-self::mei:mdiv/@label) else(''):)
         let $page :=
@@ -170,7 +196,7 @@ declare function local:getSourceParticipants($participants as xs:string*, $doc a
         let $imgHeight := number($graphic/@height)
 
         let $digilibBaseParams := local:getImageAreaPath($imageBasePath, $graphic)
-        let $rect := local:getBoundingZone($zones)
+        let $rect := local:getBoundingZone(($zones, $contextZones))
 
         let $digilibSizeParams := local:getImageAreaParams($rect, $imgWidth, $imgHeight)
 
@@ -313,6 +339,93 @@ declare function local:getZone($elem as element()) as element()? {
     )
     else
         $elem
+};
+
+(:~
+    Gets the measure sequence a measure belongs to, i.e. its mei:part in partwise sources
+    and its mei:mdiv otherwise
+
+    @param $measure The measure for which the scope shall be found
+
+    @return The element holding the relevant measure sequence
+:)
+declare function local:getMeasureScope($measure as element(mei:measure)) as element()? {
+    ($measure/ancestor::mei:part[1], $measure/ancestor::mei:mdiv[1])[1]
+};
+
+(:~
+    Gets the measure directly preceding a measure within its scope
+
+    Returns the empty sequence if the measure starts a system or page, i.e. if its closest
+    preceding sibling element is an mei:sb or mei:pb, or if it is the first measure of its scope.
+
+    @param $measure The measure for which the preceding neighbour shall be found
+
+    @return The preceding measure, or the empty sequence
+:)
+declare function local:getPrecedingNeighbour($measure as element(mei:measure)) as element(mei:measure)? {
+    if ($measure/preceding-sibling::*[1][self::mei:sb or self::mei:pb]) then
+        ()
+    else
+        $measure/preceding::mei:measure[1][local:getMeasureScope(.) is local:getMeasureScope($measure)]
+};
+
+(:~
+    Gets the measure directly following a measure within its scope
+
+    Returns the empty sequence if the measure ends a system or page, i.e. if its closest
+    following sibling element is an mei:sb or mei:pb, or if it is the last measure of its scope.
+
+    @param $measure The measure for which the following neighbour shall be found
+
+    @return The following measure, or the empty sequence
+:)
+declare function local:getFollowingNeighbour($measure as element(mei:measure)) as element(mei:measure)? {
+    if ($measure/following-sibling::*[1][self::mei:sb or self::mei:pb]) then
+        ()
+    else
+        $measure/following::mei:measure[1][local:getMeasureScope(.) is local:getMeasureScope($measure)]
+};
+
+(:~
+    Gets the measures directly adjacent to the participants of one preview, to be displayed
+    as context around the annotated measures
+
+    Adjacency is decided from the facsimile: a neighbour is only accepted if its zone sits on the
+    same mei:surface as the participants and if its vertical midpoint lies within their vertical
+    extent, i.e. if it is on the same system. This is deliberately the authority rather than
+    mei:sb / mei:pb, which are optional and frequently absent; where they are encoded they
+    additionally suppress padding (see local:getPrecedingNeighbour and local:getFollowingNeighbour).
+    Midpoint containment is used instead of plain overlap because tall zones can overlap slightly
+    between adjacent systems.
+
+    @param $elems The participants of one preview, in document order
+    @param $zones The zones of $elems
+
+    @return The adjacent measures, or the empty sequence
+:)
+declare function local:getContextMeasures($elems as element()*, $zones as element()*) as element(mei:measure)* {
+
+    let $measures := $elems[local-name() eq 'measure']
+    let $surface := $zones[1]/parent::mei:surface
+    let $yMin := min($zones/@uly ! number(.))
+    let $yMax := max($zones/@lry ! number(.))
+
+    return
+        if (empty($measures)) then
+            ()
+        else
+            for $measure in (
+                local:getPrecedingNeighbour($measures[1]),
+                local:getFollowingNeighbour($measures[last()])
+            )
+            let $zone := local:getZone($measure)
+            let $midY := (number($zone/@uly) + number($zone/@lry)) div 2
+            where $zone/parent::mei:surface is $surface
+                and $midY ge $yMin
+                and $midY le $yMax
+            return
+                $measure
 };
 
 (:~
