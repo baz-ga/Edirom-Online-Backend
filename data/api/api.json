@@ -417,6 +417,49 @@
 							}
 						},
 						{
+							"name": "edition",
+							"in": "query",
+							"required": false,
+							"description": "Path of the edition document; used to resolve edition preferences such as the application language and the image prefix when 'lang' resp. 'imagePrefix' are not given explicitly",
+							"schema": {
+								"type": "string"
+							},
+							"examples": {
+								"Empty": {
+									"summary": "Empty",
+									"value": ""
+								},
+								"Edition": {
+									"summary": "Edition",
+									"value": "/db/contents/edition.xml"
+								}
+							}
+						},
+						{
+							"name": "autoEndNotes",
+							"in": "query",
+							"required": false,
+							"description": "Whether to collect notes as endnotes at the end of the document",
+							"schema": {
+								"type": "string",
+								"enum": [
+									"true",
+									"false"
+								],
+								"default": "true"
+							},
+							"examples": {
+								"True": {
+									"summary": "True",
+									"value": "true"
+								},
+								"False": {
+									"summary": "False",
+									"value": "false"
+								}
+							}
+						},
+						{
 							"name": "autoHead",
 							"in": "query",
 							"required": false,
@@ -523,7 +566,7 @@
 									"true",
 									"false"
 								],
-								"default": "false"
+								"default": "true"
 							},
 							"examples": {
 								"True": {
@@ -533,6 +576,49 @@
 								"False": {
 									"summary": "False",
 									"value": "false"
+								}
+							}
+						},
+						{
+							"name": "prenumberedHeadings",
+							"in": "query",
+							"required": false,
+							"description": "Where heading numbers come from, only used if numberHeadings is true: 'true' takes the number from tei:div/@n, 'false' computes it from the position",
+							"schema": {
+								"type": "string",
+								"enum": [
+									"true",
+									"false"
+								],
+								"default": "true"
+							},
+							"examples": {
+								"True": {
+									"summary": "True",
+									"value": "true"
+								},
+								"False": {
+									"summary": "False",
+									"value": "false"
+								}
+							}
+						},
+						{
+							"name": "imagePrefix",
+							"in": "query",
+							"required": false,
+							"description": "Prefix prepended to image references in the returned document; falls back to the edition's 'image_prefix' preference when empty",
+							"schema": {
+								"type": "string"
+							},
+							"examples": {
+								"Empty": {
+									"summary": "Empty",
+									"value": ""
+								},
+								"IIIF": {
+									"summary": "IIIF",
+									"value": "https://example.com/images/"
 								}
 							}
 						}

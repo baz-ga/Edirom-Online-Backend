@@ -39,7 +39,7 @@ declare function api:entryPoint ($request as map(*)) {
         "@type": "EntryPoint",
         "collection": concat($base-url, "/api/collection/{?id,page,nav}"),
         "navigation" : concat($base-url, "/api/navigation/{?resource,ref,start,end,down,tree,page}"),
-        "document": concat($base-url, "/api/document/{?resource,ref,start,end,tree,mediaType,lang,idPrefix,autoHead,autoToc,tocDepth,footnoteBackLink,numberHeadings}")
+        "document": concat($base-url, "/api/document/{?resource,ref,start,end,tree,mediaType,lang,idPrefix,edition,autoEndNotes,autoHead,autoToc,tocDepth,footnoteBackLink,numberHeadings,prenumberedHeadings,imagePrefix}")
     }
 };
 
@@ -65,11 +65,16 @@ declare function api:document ($request as map(*)) {
     let $htmlParameters := map {
         "lang": if (exists($request?parameters?lang)) then xs:string($request?parameters?lang) else "",
         "idPrefix": if (exists($request?parameters?idPrefix)) then xs:string($request?parameters?idPrefix) else "",
+        "edition": if (exists($request?parameters?edition)) then xs:string($request?parameters?edition) else "",
+        "autoEndNotes": if (exists($request?parameters?autoEndNotes)) then xs:string($request?parameters?autoEndNotes) else "true",
         "autoHead": if (exists($request?parameters?autoHead)) then xs:string($request?parameters?autoHead) else "false",
         "autoToc": if (exists($request?parameters?autoToc)) then xs:string($request?parameters?autoToc) else "false",
         "tocDepth": if (exists($request?parameters?tocDepth)) then xs:string($request?parameters?tocDepth) else "1",
         "footnoteBackLink": if (exists($request?parameters?footnoteBackLink)) then xs:string($request?parameters?footnoteBackLink) else "true",
-        "numberHeadings": if (exists($request?parameters?numberHeadings)) then xs:string($request?parameters?numberHeadings) else "false"
+        "numberHeadings": if (exists($request?parameters?numberHeadings)) then xs:string($request?parameters?numberHeadings) else "true",
+        (: 'true' takes the heading number from tei:div/@n, 'false' computes it from the position :)
+        "prenumberedHeadings": if (exists($request?parameters?prenumberedHeadings)) then xs:string($request?parameters?prenumberedHeadings) else "true",
+        "imagePrefix": if (exists($request?parameters?imagePrefix)) then xs:string($request?parameters?imagePrefix) else ""
     }
     return
         try {

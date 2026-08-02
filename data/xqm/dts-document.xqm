@@ -12,6 +12,7 @@ module namespace dts-document = "http://www.edirom.de/api/dts-document";
 
 (: IMPORTS ================================================================= :)
 
+import module namespace edition = "http://www.edirom.de/xquery/edition" at "edition.xqm";
 import module namespace eutil = "http://www.edirom.de/xquery/eutil" at "eutil.xqm";
 import module namespace errors = "http://www.edirom.de/xquery/errors" at "errors.xqm";
 
@@ -371,13 +372,30 @@ declare function dts-document:transformTEIToHTML(
     let $doc := transform:transform($doc, $xsl, <parameters/>)
 
     (: Unpack html parameters :)
-    let $lang := if (map:contains($htmlParameters, "lang")) then map:get($htmlParameters, "lang") else ""
+    let $edition := if (map:contains($htmlParameters, "edition")) then map:get($htmlParameters, "edition") else ""
+    (: an explicitly submitted lang wins, otherwise fall back to the language of the edition :)
+    let $lang :=
+        if (map:contains($htmlParameters, "lang") and map:get($htmlParameters, "lang") ne "") then
+            map:get($htmlParameters, "lang")
+        else
+            edition:getLanguage($edition)
     let $idPrefix := if (map:contains($htmlParameters, "idPrefix")) then map:get($htmlParameters, "idPrefix") else ""
     let $autoHead := if (map:contains($htmlParameters, "autoHead")) then map:get($htmlParameters, "autoHead") else "false"
     let $autoToc := if (map:contains($htmlParameters, "autoToc")) then map:get($htmlParameters, "autoToc") else "false"
     let $tocDepth := if (map:contains($htmlParameters, "tocDepth")) then map:get($htmlParameters, "tocDepth") else "1"
     let $footnoteBackLink := if (map:contains($htmlParameters, "footnoteBackLink")) then map:get($htmlParameters, "footnoteBackLink") else "true"
-    let $numberHeadings := if (map:contains($htmlParameters, "numberHeadings")) then map:get($htmlParameters, "numberHeadings") else "false"
+    let $numberHeadings := if (map:contains($htmlParameters, "numberHeadings")) then map:get($htmlParameters, "numberHeadings") else "true"
+    (: 'true' takes the heading number from tei:div/@n, 'false' computes it from the position :)
+    let $prenumberedHeadings := if (map:contains($htmlParameters, "prenumberedHeadings")) then map:get($htmlParameters, "prenumberedHeadings") else "true"
+    let $autoEndNotes := if (map:contains($htmlParameters, "autoEndNotes")) then map:get($htmlParameters, "autoEndNotes") else "true"
+    (: an explicitly submitted imagePrefix wins, otherwise fall back to the edition preference :)
+    let $imagePrefix :=
+        if (map:contains($htmlParameters, "imagePrefix") and map:get($htmlParameters, "imagePrefix") ne "") then
+            map:get($htmlParameters, "imagePrefix")
+        else if ($edition ne "") then
+            (edition:getPreference('image_prefix', $edition), "")[1]
+        else
+            ""
 
     let $contextPath := request:get-scheme()|| "://" || request:get-server-name() || ":" || request:get-server-port() || request:get-context-path()
 
@@ -404,13 +422,17 @@ declare function dts-document:transformTEIToHTML(
         <param name="docUri" value="{$resource}"/>,
         <param name="contextPath" value="{$contextPath}"/>,
         <param name="base" value="{$xsltBase}"/>,
+        <param name="imagePrefix" value="{$imagePrefix}"/>,
         <param name="footnoteBackLink" value="{$footnoteBackLink}"/>,
         (: parameters for the TEI Stylesheets :)
+        <param name="autoEndNotes" value="{$autoEndNotes}"/>,
         <param name="autoHead" value="{$autoHead}"/>,
         <param name="autoToc" value="{$autoToc}"/>,
         <param name="tocDepth" value="{$tocDepth}"/>,
         <param name="documentationLanguage" value="{$lang}"/>,
+        <param name="graphicsPrefix" value="{$imagePrefix}"/>,
         <param name="numberHeadings" value="{$numberHeadings}"/>,
+        <param name="prenumberedHeadings" value="{$prenumberedHeadings}"/>,
         <param name="pageLayout" value="CSS"/>
     )
 

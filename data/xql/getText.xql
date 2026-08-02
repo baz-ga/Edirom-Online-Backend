@@ -107,6 +107,7 @@ let $params.pass1 :=
         <param name="footnoteBackLink" value="true"/>,
         <param name="graphicsPrefix" value="{$imagePrefix}"/>, (:TODO from XSLT <param name="graphicsPrefix"/>:)
         <param name="numberHeadings" value="true"/>,
+        (: 'true' takes the heading number from tei:div/@n, 'false' computes it from the position :)
         <param name="prenumberedHeadings" value="true"/>,
         <param name="pageLayout" value="CSS"/>
     </parameters>
