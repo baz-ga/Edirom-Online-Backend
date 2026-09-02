@@ -111,7 +111,28 @@
         </exec>
     </target>
 
-    <target name="docker-run-test-image" depends="download-test-data">
+    <target name="-init-test-image">
+        <description>Resolve which image the test targets run.
+            An explicit -Dtest.image=&lt;image:tag&gt; always wins, as properties are immutable.
+        </description>
+        <condition property="test.image"
+            value="edirom/edirom-online-backend:local"
+            else="edirom/edirom-online-backend:latest">
+            <isset property="local"/>
+        </condition>
+    </target>
+
+    <target name="docker-build-test-image" depends="-init-test-image" if="local">
+        <description>Build the test image from the working tree, run with -Dlocal=true</description>
+        <exec executable="docker" failonerror="true" dir="${basedir}">
+            <arg value="build"/>
+            <arg value="-t"/>
+            <arg value="${test.image}"/>
+            <arg value="."/>
+        </exec>
+    </target>
+
+    <target name="docker-run-test-image" depends="-init-test-image,download-test-data,docker-build-test-image">
         <description>Run the current test image</description>
         <exec executable="docker" failonerror="true">
             <arg value="create"/>
