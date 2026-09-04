@@ -81,7 +81,7 @@ declare variable $dts-document:specialResourcesAliases as map(xs:string, xs:stri
 (:~
  : Denotes the default HTML profile used when no profile is requested.
  :)
-declare variable $dts-document:defaultHTMLProfile as xs:string := "edirom-text";
+declare variable $dts-document:defaultHTMLProfile as xs:string := "bazga-text";
 
 (:~
  : Maps HTML profile identifiers to the transformation parameters used for them.
@@ -96,7 +96,21 @@ declare variable $dts-document:htmlProfiles as map(xs:string, element(param)*) :
     "edirom-help": (
         <param name="tocDepth" value="1"/>
     ),
-    "edirom-header": ()
+    "edirom-header": (),
+    (: BAZ-GA rendering policy for edition texts. Kept as a named profile rather than as changed
+       defaults on 'edirom-text' so the divergence from upstream stays visible in one place — and
+       because upstream's XQSuite asserts the exact contents of 'edirom-text'.
+       This is the same policy the legacy getText.xql path applies, and it is deliberately an
+       argument for making text profiles edition-specific rather than hard-coded here. :)
+    "bazga-text": (
+        <param name="footnoteBackLink" value="true"/>,
+        <param name="autoHead" value="false"/>,
+        <param name="autoToc" value="false"/>,
+        <param name="autoEndNotes" value="true"/>,
+        <param name="numberHeadings" value="true"/>,
+        (: 'true' takes the heading number from tei:div/@n, 'false' computes it from the position :)
+        <param name="prenumberedHeadings" value="true"/>
+    )
 };
 
 (: FUNCTION DECLARATIONS =================================================== :)
