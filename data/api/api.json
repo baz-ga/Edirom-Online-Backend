@@ -527,9 +527,10 @@
 								"enum": [
 									"edirom-text",
 									"edirom-help",
-									"edirom-header"
+									"edirom-header",
+									"bazga-text"
 								],
-								"default": "edirom-text"
+								"default": "bazga-text"
 							},
 							"examples": {
 								"Empty": {
@@ -547,6 +548,10 @@
 								"EdiromHeader": {
 									"summary": "EdiromHeader",
 									"value": "edirom-header"
+								},
+								"BazgaText": {
+									"summary": "BazgaText",
+									"value": "bazga-text"
 								}
 							}
 						}
