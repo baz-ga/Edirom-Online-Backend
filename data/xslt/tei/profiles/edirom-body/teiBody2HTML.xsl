@@ -1329,9 +1329,48 @@
             <xsl:apply-templates />
         </xsl:element>
     </xsl:template>
-    
+
+    <xd:doc scope="component">
+        <xd:desc>
+            <xd:p>Process tei:listEvent.</xd:p>
+            <xd:p>The TEI Stylesheets have no template for listEvent/event, so both would
+                otherwise fall through to the built-in rules and disappear, running all
+                events together into one undifferentiated blob.</xd:p>
+        </xd:desc>
+    </xd:doc>
+    <xsl:template match="tei:listEvent">
+        <xsl:if test="tei:head">
+            <xsl:element name="div">
+                <xsl:attribute name="class">listhead</xsl:attribute>
+                <xsl:apply-templates select="tei:head"/>
+            </xsl:element>
+        </xsl:if>
+        <xsl:element name="div">
+            <xsl:call-template name="rendToClass">
+                <xsl:with-param name="default">listEvent</xsl:with-param>
+            </xsl:call-template>
+            <xsl:apply-templates select="* except tei:head"/>
+        </xsl:element>
+    </xsl:template>
+
+    <xd:doc scope="component">
+        <xd:desc>Render each tei:event as its own paragraph. Events that carry block-level
+            content of their own get a div instead, since HTML forbids nesting those in a p.</xd:desc>
+    </xd:doc>
+    <xsl:template match="tei:event">
+        <xsl:variable name="hasBlockContent" as="xs:boolean"
+            select="exists(tei:p | tei:div | tei:list | tei:listEvent | tei:table
+                           | tei:figure | tei:lg | tei:quote | tei:cit | tei:floatingText)"/>
+        <xsl:element name="{if ($hasBlockContent) then 'div' else 'p'}">
+            <xsl:call-template name="rendToClass">
+                <xsl:with-param name="default">event</xsl:with-param>
+            </xsl:call-template>
+            <xsl:apply-templates/>
+        </xsl:element>
+    </xsl:template>
+
     <!-- /ADDITIONAL TEMPLATES -->
-    
+
     <!-- TEI Stylesheets 7.58.0 OVERRIDES -->
     <doc xmlns="http://www.oxygenxml.com/ns/doc/xsl" class="headings" type="string">
         <desc>Override template from common_param.xsl</desc>
@@ -1349,4 +1388,5 @@
         </xsl:choose>
     </xsl:template>
     <!-- /TEI Stylesheets 7.58.0 OVERRIDES -->
+     
 </xsl:stylesheet>
